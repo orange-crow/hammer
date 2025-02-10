@@ -1,0 +1,28 @@
+default_stages: [ pre-commit ]
+
+# Install
+# 1. pre-commit install  or poetry pre-commit install
+# 2. pre-commit run --all-files  # make sure all files are clean
+repos:
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile', 'black']
+        exclude: >-
+            (?x)^(
+            .*__init__\.py$
+            )
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.8.3
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        args: ['--line-length', '120']

@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "hammer"
+version = "0.1.0"
+description = "数据科学家的助手."
+authors = ["lbb <lbbagi@yeah.net>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+joblib = "^1.4.2"
+matplotlib = "^3.10.0"
+numpy = "^2.2.2"
+pandas = "^2.2.3"
+seaborn = "^0.13.2"
+scikit-learn = "^1.6.1"
+pyyaml = "^6.0.2"
+loguru = "^0.7.3"
+
+
+[tool.poetry.group.dev.dependencies]
+ipdb = "^0.13.13"
+pytest = "^8.3.4"
+pre-commit = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
