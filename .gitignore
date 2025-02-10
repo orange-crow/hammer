@@ -1,5 +1,3 @@
-### Python template
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -29,7 +27,7 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python scripts from a template
+#  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
@@ -84,7 +82,42 @@ target/
 profile_default/
 ipython_config.py
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
 
 # Celery stuff
@@ -117,10 +150,6 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-libs/*.py
-libs/cb*.csv
-libs/*.xlsx
-class_desc.yaml
 
 # Pyre type checker
 .pyre/
@@ -131,33 +160,13 @@ class_desc.yaml
 # Cython debug symbols
 cython_debug/
 
-# report
-allure-report
-allure-results
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
 
-# idea
-.idea
-.DS_Store
-.vscode
-
-*ipynb
-log.txt
-docs/scripts/set_env.sh
-configs.yaml
-data
-*.mmd
-tmp
-output.wav
-.aider*
-doc/竞品识别*
-*.pdf
-eda
-*.mp4
-*.html
-*.png
-*.jpeg
-*.jpg
-datas/models/new_sku_logistic.txt
-eval_new/error_analysis/eda_similars_v0.py
-catboost_info/*
+# PyPI configuration file
+.pypirc
 poetry.lock
