@@ -52,3 +52,6 @@ class TableSchema:
             field_dtype = f.split(":")[1].strip()
             schema.append({field_name: field_dtype})
         return cls.from_list(schema)
+
+    def to_dict(self) -> dict:
+        return {f.name: f.dtype for f in self.fields}
