@@ -1,8 +1,9 @@
 data_schema:
   # 这里记录数据的scheme和数据类型
-  - Y: datetime, main_time_field
-  - YEARWEEK: datetime, main_time_field
-  - SKU_ID: int, entity
-  - STORE_ID: int, entity
-  - SPU_ID: int, entity:1
-  - CHANNEL_ID: int, entity:1
+  - Y: int, target
+  - YEARWEEK: datetime, main_time
+  - SKU_ID: int, entity_1
+  - STORE_ID: int, entity_2
+  - SPU_ID: int, entity_1*1
+  - CHANNEL_ID: int, entity_2*1
+  - QUANTITY: int

@@ -21,7 +21,8 @@ class TableSchema:
         return len(self.fields)
 
     @classmethod
-    def from_yaml(cls, data_schema: List[Dict]) -> "TableSchema":
+    def from_list(cls, data_schema: List[Dict]) -> "TableSchema":
+        assert isinstance(data_schema[0], dict)
         fields = []
         for f in data_schema:
             for field_name, field_dtype in f.items():
@@ -33,5 +34,21 @@ class TableSchema:
                 fields.append(Field(field_name, dtype, tag))
         return cls(fields)
 
-    def to_yaml(self):
-        raise NotImplementedError("No idea!")
+    @classmethod
+    def from_string(cls, data_schema: str) -> "TableSchema":
+        """从字符形式载入数据表的schema
+
+        Args:
+            data_schema (str): 字符形式schema, "Y: int, target; YEARWEEK: datetime, main_time; QUANTITY: int"
+
+        Returns:
+            TableSchema: 返回创建好的TableSchema对象
+        """
+        assert ":" in data_schema
+        assert ";" in data_schema
+        schema = []
+        for f in data_schema.split(";"):
+            field_name = f.split(":")[0].strip()
+            field_dtype = f.split(":")[1].strip()
+            schema.append({field_name: field_dtype})
+        return cls.from_list(schema)

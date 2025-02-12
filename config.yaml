@@ -1,5 +1,5 @@
 data_schema:
   # 这里记录数据的scheme和数据类型
-  - Y: datetime, main_time_field
-  - YEARWEEK: datetime, main_time_field
+  - Y: int, target
+  - YEARWEEK: datetime, main_time
   - SKU_ID: int

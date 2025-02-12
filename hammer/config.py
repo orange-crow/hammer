@@ -13,4 +13,4 @@ class Config(object):
     @property
     def raw_data_schema(self) -> List[Dict]:
         schema = self.configs.get("data_schema")
-        return TableSchema.from_yaml(schema)
+        return TableSchema.from_list(schema)
