@@ -16,10 +16,14 @@ seaborn = "^0.13.2"
 scikit-learn = "^1.6.1"
 pyyaml = "^6.0.2"
 loguru = "^0.7.3"
-ray = "^2.42.0"
 psutil = "^6.1.1"
 pyarrow = "^19.0.0"
 tqdm = "^4.67.1"
+
+ray = {version = "^2.42.1", optional = true}
+
+[tool.poetry.extras]
+bigdata = ["ray"]
 
 
 [tool.poetry.group.dev.dependencies]

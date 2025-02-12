@@ -31,10 +31,10 @@ def test_pt_load(csv_path, parquet_path, schema):
     assert isinstance(pt, PandasTable)
     assert len(pt) == len(expected)
     assert not expected.equals(pt)
-    assert pt.schema == init_schema(schema)
+    assert pt._schema == init_schema(schema)
 
     pt2 = PandasTable.from_parquet(parquet_path, schema=schema)
     assert len(pt2) == len(expected)
     assert not expected.equals(pt2)
-    assert pt2.schema == init_schema(schema)
-    print(pt2.schema)
+    assert pt2._schema == init_schema(schema)
+    print(pt2._schema)
