@@ -22,7 +22,7 @@ class BigTable(TableBase):
     ) -> "BigTable":
         schema = init_schema(schema)
         df = reader(file_path, **kwargs)
-        # df = apply_schema_to_pd(df, schema)
+        df = apply_schema_to_pd(df, schema)
         return cls(df, schema)
 
     @classmethod
