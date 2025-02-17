@@ -30,9 +30,9 @@ class PandasTable(pd.DataFrame, TableBase):
     @classmethod
     def from_csv(
         cls, file_path: str, schema: Union[str, List[Dict], TableSchema], sep: str = ",", **kwargs
-    ) -> "TableBase":
+    ) -> "PandasTable":
         return cls._from_file(file_path, schema, pd.read_csv, sep=sep, **kwargs)
 
     @classmethod
-    def from_parquet(cls, file_path: str, schema: Union[str, List[Dict], TableSchema], **kwargs) -> "TableBase":
+    def from_parquet(cls, file_path: str, schema: Union[str, List[Dict], TableSchema], **kwargs) -> "PandasTable":
         return cls._from_file(file_path, schema, pd.read_parquet, **kwargs)
