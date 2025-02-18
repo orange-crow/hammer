@@ -21,6 +21,7 @@ pyarrow = "^19.0.0"
 tqdm = "^4.67.1"
 
 modin = {extras = ["ray"], version = "^0.32.0", optional = true}
+fire = "^0.7.0"
 
 [tool.poetry.extras]
 bigdata = ["ray", "modin"]

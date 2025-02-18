@@ -1,3 +1,4 @@
+import fire
 import seaborn as sns
 from matplotlib import pyplot as plt
 
@@ -39,5 +40,15 @@ def user_age():
     plt.show()
 
 
+def eda_missing():
+    df = PandasTable.from_csv(user_info_file, "user_id: str, entity; age_range: str; gender:str")
+    df.missing_info({"age_range": 0})
+
+
+def eda_distribution():
+    df = PandasTable.from_big_csv(train_file, "user_id: str, entity; merchant_id: str; label: int")
+    df.distribution("label")
+
+
 if __name__ == "__main__":
-    user_age()
+    fire.Fire()
