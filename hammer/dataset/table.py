@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Union
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from scipy import stats
 
 from ..schema import TableSchema
 from ..utils.schema import init_schema
@@ -58,7 +59,7 @@ class PandasTable(pd.DataFrame, TableBase):
         pprint(missing_info, indent=2, sort_dicts=True)
 
     @staticmethod
-    def plot_discrete_data_distribution(s: pd.Series):
+    def plot_pie_bar(s: pd.Series):
         _, ax = plt.subplots(1, 2, figsize=(12, 6))
         value_counts = s.value_counts()
         ax[0].pie(value_counts, autopct="%1.1f%%", shadow=True, explode=[0, 0.1])
@@ -75,15 +76,17 @@ class PandasTable(pd.DataFrame, TableBase):
                 xytext=(0, 5),
                 textcoords="offset points",
             )
-        plt.show()
 
     @staticmethod
-    def plot_continuous_data_distribution(s: pd.Series):
-        raise NotImplementedError("No idea!")
+    def plot_prob(s: pd.Series):
+        _, ax = plt.subplots(1, 2, figsize=(12, 6))
+        sns.histplot(s, ax=ax[0])
+        ax[0].set_title(f"Distribution Plot: {s.name}")
+        stats.probplot(s, plot=ax[1])
 
     def distribution(self, target_col: str) -> None:
         nunique_val = self[target_col].nunique()
         if nunique_val < 10 and self[target_col].dtype.name.startswith(("int", "category", "object")):
-            self.plot_discrete_data_distribution(self[target_col])
+            self.plot_pie_bar(self[target_col])
         else:
-            self.plot_continuous_data_distribution(self[target_col])
+            self.plot_prob(self[target_col])

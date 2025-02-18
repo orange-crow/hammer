@@ -49,6 +49,13 @@ def eda_distribution():
     df = PandasTable.from_big_csv(train_file, "user_id: str, entity; merchant_id: str; label: int")
     df.distribution("label")
 
+    # 查看店铺复购率分布
+    ## 计算复购率
+    repurchase = df.groupby("merchant_id")["label"].mean()
+    repurchase = PandasTable(repurchase.loc[(repurchase > 0) & (repurchase <= 1)])
+    repurchase.distribution("label")
+    plt.show()
+
 
 if __name__ == "__main__":
     fire.Fire()
