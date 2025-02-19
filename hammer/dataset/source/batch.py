@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ..table import PandasTable
+from .. import TableBase
 from .client import ClientBase
 
 
@@ -18,12 +18,12 @@ class BatchConfig(ABC):
 
 
 class BatchSource(object):
-    """获取外部数据和数据类型转换成PandasTable"""
+    """获取外部数据和数据类型转换成 TableBase"""
 
     def __init__(self, name: str, batch_config: BatchConfig):
         self.name = name
         self.batch_config = batch_config
 
     @abstractmethod
-    def read(self) -> PandasTable:
+    def read(self) -> TableBase:
         pass
