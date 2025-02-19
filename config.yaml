@@ -3,3 +3,10 @@ data_schema:
   - Y: int, target
   - YEARWEEK: datetime, main_time
   - SKU_ID: int
+
+infra:
+  clickhouse:
+    host: xxx
+    port: xx
+    user: xx
+    password: xx

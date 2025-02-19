@@ -296,6 +296,17 @@ class PandasTable(pd.DataFrame, TableBase):
         return self
 
     @property
+    def table_schema(self) -> TableSchema:
+        return self._schema
+
+    def set_table_schema(self, table_schema: Union[str, List[Dict]]) -> None:
+        if isinstance(table_schema, str):
+            self._schema = TableSchema.from_string(table_schema)
+        elif isinstance(table_schema, List) and isinstance(table_schema[0], Dict):
+            self._schema = TableSchema.from_list(table_schema)
+        raise ValueError(f"Error value for table_schema: {table_schema}, only support str or list[dict]")
+
+    @property
     def loc(self):
         """
         覆盖 loc 函数，确保 loc 操作返回 PandasTable 类型。
