@@ -18,7 +18,7 @@ class ClickHouseClient(ClientBase):
             username=self._user, password=self._password, host=self._host, port=self._port, send_receive_timeout=1200
         )
 
-    def read(self, query_or_file_path: str, existing_connection: Client = None, **kwargs) -> pd.DataFrame:
+    def _read(self, query_or_file_path: str, existing_connection: Client = None, *args, **kwargs) -> pd.DataFrame:
         show_log = kwargs.get("show_log", True)
         with existing_connection or self.connect() as connection:
             if show_log:
