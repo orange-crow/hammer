@@ -12,7 +12,7 @@ from pandas.core.indexing import _LocIndexer
 from ..schema import TableSchema
 from ..utils.schema import init_schema
 from .table_base import TableBase
-from .table_utiles import missing_info, plot_pie_bar, plot_prob
+from .table_utiles import missing_info, plot_pie_bar, plot_prob, reduce_memory
 
 
 def wrape_result(result: Any):
@@ -354,3 +354,6 @@ class PandasTable(pd.DataFrame, TableBase):
             self.plot_pie_bar(self[target_col])
         else:
             self.plot_prob(self[target_col])
+
+    def reduce_memory(self) -> "PandasTable":
+        reduce_memory(self)

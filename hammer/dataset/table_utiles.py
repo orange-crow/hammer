@@ -43,3 +43,42 @@ def plot_prob(s: pd.Series):
     sns.histplot(s, ax=ax[0])
     ax[0].set_title(f"Distribution Plot: {s.name}")
     stats.probplot(s, plot=ax[1])
+
+
+def reduce_memory(df: pd.DataFrame):
+    # 打印压缩前的内存占用
+    print(f"Memory usage before compression: {df.memory_usage(deep=True).sum() / 1024**2} MB")
+
+    # 压缩数据类型
+    for col in df.select_dtypes(include=["int64", "float64"]).columns:
+        min_value = df[col].min()
+        max_value = df[col].max()
+
+        if df[col].dtype == "int64":
+            # 根据数据范围压缩int类型
+            if min_value >= 0:
+                if max_value < 2**8:
+                    df[col] = df[col].astype("uint8")
+                elif max_value < 2**16:
+                    df[col] = df[col].astype("uint16")
+                elif max_value < 2**32:
+                    df[col] = df[col].astype("uint32")
+                else:
+                    df[col] = df[col].astype("uint64")
+            else:
+                if min_value >= -(2**7) and max_value < 2**7:
+                    df[col] = df[col].astype("int8")
+                elif min_value >= -(2**15) and max_value < 2**15:
+                    df[col] = df[col].astype("int16")
+                elif min_value >= -(2**31) and max_value < 2**31:
+                    df[col] = df[col].astype("int32")
+                else:
+                    df[col] = df[col].astype("int64")
+        elif df[col].dtype == "float64":
+            # 压缩float类型
+            df[col] = df[col].astype("float32")
+
+    # 打印压缩后的内存占用
+    print(f"Memory usage after compression: {df.memory_usage(deep=True).sum() / 1024**2} MB")
+
+    return df

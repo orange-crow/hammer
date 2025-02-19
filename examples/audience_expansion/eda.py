@@ -43,10 +43,11 @@ def user_age():
 def eda_missing():
     df = PandasTable.from_csv(user_info_file, "user_id: str, entity; age_range: str; gender:str")
     df.missing_info({"age_range": 0})
+    df.reduce_memory()
 
 
 def eda_distribution():
-    df = PandasTable.from_big_csv(train_file, "user_id: str, entity; merchant_id: str; label: int")
+    df = PandasTable.from_big_csv(train_file, "user_id: int, entity; merchant_id: int; label: int")
     df.distribution("label")
 
     # 查看店铺复购率分布
