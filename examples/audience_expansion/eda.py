@@ -52,8 +52,8 @@ def eda_distribution():
     # 查看店铺复购率分布
     ## 计算复购率
     repurchase = df.groupby("merchant_id")["label"].mean()
-    repurchase = PandasTable(repurchase.loc[(repurchase > 0) & (repurchase <= 1)])
-    repurchase.distribution("label")
+    repurchase = repurchase.loc[(repurchase > 0) & (repurchase <= 1)]
+    repurchase.distribution()
     plt.show()
 
 
