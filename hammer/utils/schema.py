@@ -2,12 +2,14 @@ from typing import Dict, List, Union
 
 import pandas as pd
 
-from ..schema import TableSchema
+from ..schema import Field, TableSchema
 
 
 def init_schema(schema: Union[str, List[Dict], TableSchema]) -> TableSchema:
-    if isinstance(schema, list):
+    if isinstance(schema, list) and isinstance(schema[0], str):
         return TableSchema.from_list(schema)
+    elif isinstance(schema, list) and isinstance(schema[0], Field):
+        return TableSchema(schema)
     elif isinstance(schema, str):
         return TableSchema.from_string(schema)
     elif isinstance(schema, TableSchema):

@@ -281,6 +281,9 @@ class PandasTable(pd.DataFrame, TableBase):
 
         return wrape_result(result)
 
+    def __str__(self):
+        return super().__str__() + f"\n{self.table_schema}"
+
     def __getitem__(self, key):
         """
         重写 __getitem__ 以确保通过索引操作返回 PandasTable 类型。

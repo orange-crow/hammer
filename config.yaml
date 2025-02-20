@@ -5,8 +5,18 @@ data_schema:
   - SKU_ID: int
 
 infra:
-  clickhouse:
-    host: xxx
-    port: xx
-    user: xx
-    password: xx
+  current_env: dev
+  dev:
+    clickhouse:
+      - name: clickhouse1
+        host: xxx
+        port: xx
+        user: xx
+        password: xx
+  prod:
+    clickhouse:
+      - name: clickhouse1
+        host: xxx
+        port: xx
+        user: xx
+        password: xx

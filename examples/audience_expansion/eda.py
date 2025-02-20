@@ -44,6 +44,7 @@ def eda_missing():
     df = PandasTable.from_csv(user_info_file, "user_id: str, entity; age_range: str; gender:str")
     df.missing_info({"age_range": 0})
     df.reduce_memory()
+    df.info()
 
 
 def eda_distribution():
