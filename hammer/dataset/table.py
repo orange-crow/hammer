@@ -300,7 +300,12 @@ class PandasTable(pd.DataFrame, TableBase):
 
     @property
     def table_schema(self) -> TableSchema:
+        if self._schema is None:
+            self._schema = init_schema([{k: v} for k, v in self.dtypes.to_dict().items()])
         return self._schema
+
+    def update_schema(self) -> None:
+        raise NotImplementedError
 
     def set_table_schema(self, table_schema: Union[str, List[Dict]]) -> None:
         if isinstance(table_schema, str):

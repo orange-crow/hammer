@@ -230,3 +230,9 @@ class DataSource(ABC):
     def to_pandas(self) -> PandasTable:
         data = self.source_config.read()
         return PandasTable(data, schema=self.source_config.schema)
+
+    def to_spark(self):
+        raise NotImplementedError
+
+    def to_flink(self):
+        raise NotImplementedError
