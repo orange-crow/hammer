@@ -1,19 +1,34 @@
+from abc import abstractmethod
 from dataclasses import field
 from typing import Dict, Literal
 
 
 class Operation(object):
     def __init__(
-        self, name: str, params: dict, input_nodes: Dict[str, "Node"], output_node: "Node", *, target_ops: dict = {}
+        self,
+        pandas_name: str,
+        pandas_params: dict,
+        *,
+        target_ops: dict = {},
+        engine: Literal["pandas", "pyarrow", "pyspark"] = "pandas",
     ):
-        self.name = name  # name to show in dag.
-        self.params = params or {}  # params of operation excluding input nodes
-        self.input_nodes = input_nodes  # params of operation about input nodes
-        self.output_node = output_node
+        self.pandas_name = pandas_name  # name from pandas.
+        self.pandas_params = pandas_params or {}  # params of operation excluding input nodes
         self.target_ops = target_ops
+        self.engine = engine
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(input_nodes={self.input_nodes})"
+        return f"{self.__class__.__name__}({self.params})"
+
+    @property
+    @abstractmethod
+    def arg_names(self):
+        pass
+
+    @property
+    @abstractmethod
+    def params(self):
+        pass
 
     def to_pyspark(self) -> str:
         raise NotImplementedError
@@ -40,7 +55,7 @@ class Node(object):
         """Represents a data node in the DAG.
 
         Args:
-            name (str): Name of the data node.
+            name (str): Name of the data node, it is name of variable.
             node_type (str): Type of the node, either "data" or "op" (operation).
             data_type (str): Type of the data node, either "io" (data IO) or "memory" (in-memory data).
             source (str, optional): Data source (file path or database connection), only applicable for IO nodes.
