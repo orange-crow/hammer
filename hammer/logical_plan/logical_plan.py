@@ -1,11 +1,11 @@
-from typing import Dict, List, Literal, Union
+from typing import Dict, Literal
 
 import networkx as nx
 
 from .node import Node, Operation
 
 
-class PandasDAG(object):
+class DAG(object):
     def __init__(self):
         """Initializes an empty Directed Acyclic Graph (DAG)."""
         self.graph = nx.DiGraph()
@@ -21,22 +21,29 @@ class PandasDAG(object):
         self.graph.add_node(name, type="data", obj=Node(name, node_type="data", data_type=data_type, source=source))
 
     def add_operation_node(
-        self, name: str, operation: str, params: Union[Dict, List], input_nodes: List[str], output_node: str
+        self,
+        name: str,
+        params: dict,
+        input_nodes: Dict[str, str],
+        output_node: str,
+        *,
+        target_ops: dict[str, str] = None,
     ):
         """Adds an operation node to the DAG and connects it to input and output data nodes.
 
         Args:
             name (str): Name of the data node.
-            operation (str): the operation name, like groupby, sum, count, apply ...
-            params (dict): Parameters for the operation.
-            input_nodes (List[str]): Input nodes names for operation.
+            input_nodes (dict[str, str]): Input nodes for the operation.
             output_node (str): Output node name for the operation.
         """
         self.graph.add_node(
             name,
             type="op",
             obj=Node(
-                name, node_type="op", operation=operation, params=Operation(operation, params, input_nodes, output_node)
+                name,
+                node_type="op",
+                operation=name,
+                params=Operation(name, params, input_nodes, output_node, target_ops=target_ops),
             ),
         )
         for input_node in input_nodes:

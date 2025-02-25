@@ -1,5 +1,5 @@
-from .logical_plan import PandasDAG
+from .logical_plan import DAG
 from .node import Node, Operation
 
 
-__all__ = ["PandasDAG", "Node", "Operation"]
+__all__ = ["DAG", "Node", "Operation"]
