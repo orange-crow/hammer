@@ -1,18 +1,19 @@
-from typing import Dict, List, Literal
+from typing import List
 
-from .. import Operation
+from .build_ops import register_op
+from .operation import OperationNode
 
 
-class SumOp(Operation):
-    def __init__(
-        self,
-        pandas_params: List[List, Dict],
-        *,
-        target_ops=None,
-        engine: Literal["pandas", "pyarrow", "pyspark"] = "pandas"
-    ):
-        super().__init__("sum", pandas_params, target_ops=target_ops)
-        self.engine = engine
+@register_op()
+class SumOp(OperationNode):
+    pandas_name: str = "sum"
+
+    def __init__(self):
+        super().__init__("sum", None, None)
+
+    @property
+    def is_data_method(self) -> bool:
+        return True
 
     @property
     def positional_args_name(self) -> List[str]:

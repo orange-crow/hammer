@@ -1,19 +1,24 @@
-from typing import Dict, List, Literal
+from typing import Any, Dict, List
 
-from .. import Operation
+from .build_ops import register_op
+from .operation import OperationNode
 
 
-class GroupbyOp(Operation):
+@register_op()
+class GroupbyOp(OperationNode):
+    pandas_name: str = "groupby"
+
     def __init__(
         self,
-        pandas_params: List[List, Dict],
-        *,
-        target_ops=None,
-        engine: Literal["pandas", "pyarrow", "pyspark"] = "pandas",
+        pandas_positional_args: List,
+        pandas_keyword_args: Dict[str, Any] = None,
     ):
-        super().__init__("groupby", pandas_params, target_ops=target_ops)
-        self.by = self.pandas_keword_args.get("by")
-        self.engine = engine
+        super().__init__("groupby", pandas_positional_args, pandas_keyword_args)
+        self.by = self.pandas_keyword_args.get("by")
+
+    @property
+    def is_data_method(self) -> bool:
+        return True
 
     @property
     def positional_args_name(self) -> List[str]:

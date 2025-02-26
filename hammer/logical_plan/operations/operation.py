@@ -1,23 +1,28 @@
 from abc import abstractmethod
-from typing import Any, Dict, List, Literal, Tuple
+from typing import Any, Dict, List
 
 
-class Operation(object):
+class OperationNode(object):
     def __init__(
         self,
         pandas_name: str,
-        pandas_params: Tuple[List, Dict],
+        pandas_positional_args: List[str] = None,
+        pandas_keyword_args: Dict[str, Any] = None,
         *,
         target_ops: Dict = {},
-        engine: Literal["pandas", "pyarrow", "pyspark"] = "pandas",
     ):
         self.pandas_name = pandas_name  # name from pandas.
-        self.pandas_params = pandas_params or {}  # params of operation excluding input nodes
+        self.pandas_positional_args = pandas_positional_args or []
+        self._pandas_keyword_args = pandas_keyword_args or {}
         self.target_ops = target_ops
-        self.engine = engine
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.pandas_keword_args})"
+        return f"{self.__class__.__name__}({self.pandas_keyword_args})"
+
+    @property
+    @abstractmethod
+    def is_data_method(self) -> bool:
+        pass
 
     @property
     @abstractmethod
@@ -25,10 +30,9 @@ class Operation(object):
         pass
 
     @property
-    def pandas_keword_args(self) -> Dict[str, Any]:
-        positional_args = self.pandas_params[0]
-        keyword_args = dict(self.pandas_params[1])
-        for arg_name, value in zip(self.positional_args_name, positional_args):
+    def pandas_keyword_args(self) -> Dict[str, Any]:
+        keyword_args = dict(self._pandas_keyword_args)
+        for arg_name, value in zip(self.positional_args_name, self.pandas_positional_args):
             keyword_args[arg_name] = value
         return keyword_args
 

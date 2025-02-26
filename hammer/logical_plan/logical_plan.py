@@ -2,50 +2,50 @@ from typing import Any, Dict, List, Literal, Union
 
 import networkx as nx
 
-from .node import Node
-from .operations.create_ops import create_ops
+from .data_node import DataNode
+from .operations import OperationNode, create_ops
 
 
-class DAG(object):
+class LogicalPlan(object):
     def __init__(self):
         """Initializes an empty Directed Acyclic Graph (DAG)."""
         self.graph = nx.DiGraph()
 
-    def add_data_node(self, name: str, data_type: Literal["io", "memory"], source: str = None):
+    def add_data_node(self, name: str, data_type: Literal["io", "memory", "sql"], source: str = None):
         """Adds a data node to the DAG.
 
         Args:
             name (str): Name of the data node.
-            data_type (str): Type of the data node, either "io" (data IO) or "memory" (in-memory data).
+            data_type (str): Type of the data node, either "io" (data IO) or "memory" (in-memory data) or "sql" (use sql to fetch data).
             source (str, optional): Data source (file path or database connection), only applicable for IO nodes.
         """
-        self.graph.add_node(name, type="data", obj=Node(name, node_type="data", data_type=data_type, source=source))
+        self.graph.add_node(name, type="data", obj=DataNode(name, data_type=data_type, source=source))
 
     def add_operation_node(
         self,
+        node_name: str,  # show in dag
         pandas_name: str,
-        pandas_params: dict,
-        input_nodes: Union[str, List, Dict],
-        output_node: str,
+        pandas_positional_args: List = None,
+        pandas_keyword_args: Dict[str, Any] = None,
+        input_nodes: Union[str, List] = None,
+        output_node: str = None,
         *,
         target_ops: dict[str, str] = None,
     ):
         self.graph.add_node(
-            pandas_name,
+            node_name,
             type="op",
-            obj=create_ops(pandas_name, pandas_params, target_ops=target_ops),
+            obj=create_ops(pandas_name, pandas_positional_args, pandas_keyword_args, target_ops=target_ops),
         )
         if isinstance(input_nodes, str):
             input_nodes = [input_nodes]
 
         if isinstance(input_nodes, list):
             for input_node in input_nodes:
-                self.graph.add_edge(input_node, pandas_name)  # Connect input data nodes
-        elif isinstance(input_nodes, dict):
-            for edge_name, input_node in input_nodes.items():
-                self.graph.add_edge(input_node, pandas_name)  # Connect input data nodes
-                # TODO: 将edge_name附到edge上
-        self.graph.add_edge(pandas_name, output_node)  # Connect output data node
+                self.graph.add_edge(input_node, node_name)
+        else:
+            raise ValueError
+        self.graph.add_edge(node_name, output_node)
 
     def visualize(self):
         """Visualizes the DAG using matplotlib."""
@@ -65,6 +65,48 @@ class DAG(object):
     def has_node(self, node_name: str) -> bool:
         return self.graph.has_node(node_name)
 
-    def to_pyspark(self):
+    def node_startswith(self, prefix: str) -> List[str]:
+        node_names = [n for n in self.graph.nodes if n.startswith(prefix)]
+        return node_names
+
+    def _get_shortest_paths(self, start_node: str, end_node: str) -> List[str]:
+        paths = list(nx.all_shortest_paths(self.graph, start_node, end_node, method="dijkstra"))
+        return paths
+
+    def get_input_nodes(self, node_name) -> List[str]:
+        if not self.graph.has_node(node_name):
+            raise KeyError(f"节点 {node_name} 不存在于图中。")
+        return list(self.graph.predecessors(node_name))
+
+    def to_pyspark(self, start_node: str, end_node: str):
         """Converts the DAG to PySpark code."""
-        raise NotImplementedError
+        code_content = ""
+        oneline_data = ""
+        oneline_ops = ""
+        for node_name in self._get_shortest_paths(start_node, end_node)[0]:
+            node: Union[DataNode, OperationNode] = self[node_name]["obj"]
+            if isinstance(node, DataNode):
+                if node.data_type == "io":
+                    oneline_data = f"\n{node.name} = '{node.source}'"
+                    code_content += oneline_data
+                elif node.data_type == "sql":
+                    raise NotImplementedError
+                elif node.data_type == "memory":
+                    oneline_data = node.name
+                    code_content += f"\n{oneline_data} = {oneline_ops}"
+                else:
+                    raise ValueError
+                oneline_data = ""
+                oneline_ops = ""
+            elif isinstance(node, OperationNode):
+                if oneline_ops:
+                    oneline_ops += f".{node.to_pyspark()}"
+                else:
+                    input_nodes = self.get_input_nodes(node_name)
+                    if input_nodes and len(input_nodes) == 1 and self[node_name]["obj"].is_data_method:
+                        oneline_ops += f"{input_nodes[0]}.{node.to_pyspark()}"
+                    else:
+                        oneline_ops += node.to_pyspark()
+            else:
+                raise ValueError
+        return code_content
