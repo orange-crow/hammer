@@ -1,7 +1,8 @@
 import inspect
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set
 
 _OPERATION_REGISTRY: Dict[str, type] = {}
+_DATA_METHOD_OPERATION: Set[str] = set()
 
 
 def register_op() -> type:
@@ -10,6 +11,9 @@ def register_op() -> type:
             raise AttributeError(f"类 {cls.__name__} 必须定义类属性 pandas_name")
         # 将类按 pandas_name 注册到字典中
         _OPERATION_REGISTRY[cls.pandas_name] = cls
+        # 注册方法链的方法
+        if cls.is_data_method:
+            _DATA_METHOD_OPERATION.add(cls.pandas_name)
         return cls
 
     return decorator

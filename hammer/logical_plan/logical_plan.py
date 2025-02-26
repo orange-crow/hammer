@@ -37,15 +37,19 @@ class LogicalPlan(object):
             type="op",
             obj=create_ops(pandas_name, pandas_positional_args, pandas_keyword_args, target_ops=target_ops),
         )
-        if isinstance(input_nodes, str):
-            input_nodes = [input_nodes]
 
-        if isinstance(input_nodes, list):
-            for input_node in input_nodes:
-                self.graph.add_edge(input_node, node_name)
-        else:
-            raise ValueError
-        self.graph.add_edge(node_name, output_node)
+        if input_nodes:
+            if isinstance(input_nodes, str):
+                input_nodes = [input_nodes]
+
+            if isinstance(input_nodes, list):
+                for input_node in input_nodes:
+                    self.graph.add_edge(input_node, node_name)
+            else:
+                raise ValueError
+
+        if output_node:
+            self.graph.add_edge(node_name, output_node)
 
     def visualize(self):
         """Visualizes the DAG using matplotlib."""
