@@ -2,8 +2,8 @@ from typing import Any, Dict, List, Literal, Union
 
 import networkx as nx
 
-from .create_ops import create_ops
 from .node import Node
+from .operations.create_ops import create_ops
 
 
 class DAG(object):

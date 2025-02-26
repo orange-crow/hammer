@@ -1,40 +1,5 @@
-from abc import abstractmethod
 from dataclasses import field
 from typing import Dict, Literal
-
-
-class Operation(object):
-    def __init__(
-        self,
-        pandas_name: str,
-        pandas_params: dict,
-        *,
-        target_ops: dict = {},
-        engine: Literal["pandas", "pyarrow", "pyspark"] = "pandas",
-    ):
-        self.pandas_name = pandas_name  # name from pandas.
-        self.pandas_params = pandas_params or {}  # params of operation excluding input nodes
-        self.target_ops = target_ops
-        self.engine = engine
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.params})"
-
-    @property
-    @abstractmethod
-    def arg_names(self):
-        pass
-
-    @property
-    @abstractmethod
-    def params(self):
-        pass
-
-    def to_pyspark(self) -> str:
-        raise NotImplementedError
-
-    def to_dask(self) -> str:
-        raise NotImplementedError
 
 
 class Node(object):
