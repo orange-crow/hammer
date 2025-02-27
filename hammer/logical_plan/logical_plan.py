@@ -73,9 +73,15 @@ class LogicalPlan(object):
         node_names = [n for n in self.graph.nodes if n.startswith(prefix)]
         return node_names
 
-    def _get_shortest_paths(self, start_node: str, end_node: str) -> List[str]:
+    def _get_shortest_paths(self, start_node: str, end_node: str) -> List[List[str]]:
         paths = list(nx.all_shortest_paths(self.graph, start_node, end_node, method="dijkstra"))
         return paths
+
+    def _get_datanodes(self, start_node: str, end_node: str) -> List[str]:
+        return [n for n in self._get_shortest_paths(start_node, end_node)[0] if self[n]["type"] == "data"]
+
+    def _get_operation_nodes(self, start_node: str, end_node: str) -> List[str]:
+        return [n for n in self._get_shortest_paths(start_node, end_node)[0] if self[n]["type"] == "op"]
 
     def get_input_nodes(self, node_name) -> List[str]:
         if not self.graph.has_node(node_name):
