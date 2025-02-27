@@ -1,5 +1,4 @@
 import ast
-import textwrap
 from typing import List, Literal
 
 from ...dataset.source import SUPPORT_FIEL_TYPES
@@ -55,12 +54,7 @@ class PandasParser(ast.NodeVisitor):
                     source = self.update_node_name(source)
                 elif source.endswith(SUPPORT_FIEL_TYPES):
                     self.dag.add_data_node(var_name, data_type="io", source=source)
-
-                self.dag.add_edge(source, var_name)
-                self.dag.visualize()
-                # FIXME: 第1行的赋值语句中函数入参的node处理，得要等到处理第二行赋值语句时才进行
-
-        self.generic_visit(node)
+                return var_name, source
 
     def visit_Call(self, node):
         """解析函数调用，例如 pd.read_csv(input_csv)"""
@@ -73,7 +67,6 @@ class PandasParser(ast.NodeVisitor):
         func_args = [func_args] if isinstance(func_args, str) else func_args
         input_nodes = [n for n in func_args if self.dag.has_node(n)]
         self.dag.add_operation_node(func_name, func_name, func_args, func_keywords, input_nodes=input_nodes)
-        self.generic_visit(node)
 
     def visit_Subscript(self, node):
         """解析 DataFrame 列选择，例如 df["value"]"""
@@ -81,11 +74,6 @@ class PandasParser(ast.NodeVisitor):
         source = self._get_source(node.value)
         # dag
         self.dag.add_operation_node("select", "select", col_name, input_nodes=source)
-        self.generic_visit(node)
-
-    def visit_Attribute(self, node):
-        """解析方法调用，例如 df.sum()"""
-        self.generic_visit(node)
 
     def _get_func_name(self, node):
         """获取函数名"""
@@ -130,9 +118,31 @@ class PandasParser(ast.NodeVisitor):
             return parent.targets[0].id
         return None
 
-    def parse(self, code):
-        tree = ast.parse(textwrap.dedent((code)))
-        for node in ast.walk(tree):
-            for child in ast.iter_child_nodes(node):
-                child.parent = node  # 给AST节点添加父节点信息
-        self.visit(tree)
+    def parse_line(self, line):
+        try:
+            tree = ast.parse(line)
+            var_name, source = None, None
+            for node in ast.walk(tree):
+                for child in ast.iter_child_nodes(node):
+                    child.parent = node  # 给AST节点添加父节点信息
+                if isinstance(node, ast.Assign):
+                    var_name, source = self.visit_Assign(node)
+                elif isinstance(node, ast.Call):
+                    self.visit_Call(node)
+                elif isinstance(node, ast.Subscript):
+                    self.visit_Subscript(node)
+            return var_name, source
+        except SyntaxError:
+            print(f"语法错误: {line}")
+            return var_name, source
+
+    def parse(self, code: str):
+        lines = code.strip().split("\n")
+        pipelines = []
+        for line in lines:
+            if line.strip():  # 忽略空行
+                var_name, source = self.parse_line(line.strip())
+                if var_name:
+                    self.dag.add_edge(source, var_name)
+                    # self.dag.visualize()
+        return pipelines
