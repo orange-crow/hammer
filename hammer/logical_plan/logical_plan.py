@@ -19,7 +19,7 @@ class LogicalPlan(object):
             data_type (str): Type of the data node, either "io" (data IO) or "memory" (in-memory data) or "sql" (use sql to fetch data).
             source (str, optional): Data source (file path or database connection), only applicable for IO nodes.
         """
-        self.graph.add_node(name, type="data", obj=DataNode(name, data_type=data_type, source=source))
+        self.graph.add_node(self.rename_node(name), type="data", obj=DataNode(name, data_type=data_type, source=source))
 
     def add_operation_node(
         self,
@@ -28,12 +28,11 @@ class LogicalPlan(object):
         pandas_positional_args: List = None,
         pandas_keyword_args: Dict[str, Any] = None,
         input_nodes: Union[str, List] = None,
-        output_node: str = None,
         *,
         target_ops: dict[str, str] = None,
     ):
         self.graph.add_node(
-            node_name,
+            self.rename_node(node_name),
             type="op",
             obj=create_ops(pandas_name, pandas_positional_args, pandas_keyword_args, target_ops=target_ops),
         )
@@ -44,12 +43,12 @@ class LogicalPlan(object):
 
             if isinstance(input_nodes, list):
                 for input_node in input_nodes:
-                    self.graph.add_edge(input_node, node_name)
+                    self.graph.add_edge(self.get_last_node(input_node), self.get_last_node(node_name))
             else:
                 raise ValueError
 
-        if output_node:
-            self.graph.add_edge(node_name, output_node)
+    def add_edge(self, from_node: str, to_node: str):
+        self.graph.add_edge(self.get_last_node(from_node), self.get_last_node(to_node))
 
     def visualize(self):
         """Visualizes the DAG using matplotlib."""
@@ -84,9 +83,44 @@ class LogicalPlan(object):
         return [n for n in self._get_shortest_paths(start_node, end_node)[0] if self[n]["type"] == "op"]
 
     def get_input_nodes(self, node_name) -> List[str]:
+        """获取节点的输入节点"""
         if not self.graph.has_node(node_name):
-            raise KeyError(f"节点 {node_name} 不存在于图中。")
+            return []
         return list(self.graph.predecessors(node_name))
+
+    def get_out_degree(self, node_name) -> int:
+        """获取节点的输出节点个数"""
+        return self.graph.out_degree(node_name)
+
+    def rename_node(self, node_name: str) -> str:
+        """重新命名节点, 防止因为重名节点造成dag出现环"""
+        # 重名名的条件: 节点已经存在，而且 (有输入节点，或者， 有输出节点）
+        if self.has_node(node_name) and self.graph.nodes.get(node_name):
+            node_type = self[node_name]["type"]
+            last_node = self.get_last_node(node_name)
+            # 如果node_name 最新重名节点 last_node 还没有使用的话, 就直接返回 last_node
+            if (node_type == "data" and len(self.get_input_nodes(last_node)) == 0) or (
+                node_type == "op" and self.get_out_degree(last_node) == 0
+            ):
+                return last_node
+            return f"{node_name}_hammer_tag_{len(self.get_duplicated_nodes(node_name))}"
+        return node_name
+
+    def get_duplicated_nodes(self, node_name: str) -> List[str]:
+        """获取 node_name 同名节点"""
+        if self.has_node(node_name):
+            nodes = list(set(self.node_startswith(f"{node_name}_hammer_tag_")))
+            return sorted([node_name, *nodes])
+        return [node_name]
+
+    def get_last_node(self, node_name: str) -> str:
+        """获取 node_name 同名节点中最新节点名, 若不存在则返回查询的节点名"""
+        return self.get_duplicated_nodes(node_name)[-1]
+
+    def get_second_to_last_node(self, node_name: str) -> str:
+        """获取 node_name 同名节点中倒数第二节点名, 若不存在则返回查询的节点名"""
+        nodes = self.get_duplicated_nodes(node_name)
+        return nodes[-2] if len(nodes) > 1 else node_name
 
     def to_pyspark(self, start_node: str, end_node: str):
         """Converts the DAG to PySpark code."""
