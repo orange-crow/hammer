@@ -49,6 +49,7 @@ class PandasParser(ast.NodeVisitor):
         source = self._get_source(node.value)
         # dag
         # FIXME: Subscript 之后的 output_node 无法确定，或者说 Attribute 的输入节点为 Subscript 时, 无法将 Subscript作为 input_nodes 赋给 Attribute
+        # FIXME: 如何将 Subscript 定死为 Dataframe的select？
         self.dag.add_operation_node("select", "select", col_name, input_nodes=source)
         self.generic_visit(node)
 
@@ -61,9 +62,12 @@ class PandasParser(ast.NodeVisitor):
         if isinstance(node, ast.Attribute):
             if node.attr in _DATA_METHOD_OPERATION and hasattr(node.value, "id"):
                 self.dag.graph.add_edge(node.value.id, node.attr)
-            return node.attr  # 例如 `groupby`
+            # FIXME: 如果 select 是多个的话，这里hard code就很难自适应修改。
+            elif node.attr in _DATA_METHOD_OPERATION and isinstance(node.value, ast.Subscript):
+                self.dag.graph.add_edge("select", node.attr)
+            return node.attr
         elif isinstance(node, ast.Name):
-            return node.id  # 例如 `read_csv`
+            return node.id
         return None
 
     def _get_arg_value(self, node):
