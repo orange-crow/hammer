@@ -14,7 +14,11 @@ class LocOp(OperationNode):
         pandas_keyword_args: Dict[str, Any] = None,
     ):
         super().__init__("loc", pandas_positional_args, pandas_keyword_args)
-        self._select_cols = self.pandas_positional_args
+        self._select_cols = (
+            [self.pandas_positional_args]
+            if isinstance(self.pandas_positional_args, str)
+            else self.pandas_positional_args
+        )
 
     @property
     def is_data_method(self) -> bool:
@@ -38,7 +42,11 @@ class SelectOp(OperationNode):
         pandas_keyword_args: Dict[str, Any] = None,
     ):
         super().__init__("select", pandas_positional_args, pandas_keyword_args)
-        self._select_cols = self.pandas_positional_args
+        self._select_cols = (
+            [self.pandas_positional_args]
+            if isinstance(self.pandas_positional_args, str)
+            else self.pandas_positional_args
+        )
 
     @property
     def is_data_method(self) -> bool:

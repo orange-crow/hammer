@@ -9,6 +9,7 @@ if __name__ == "__main__":
     df3 = df2["value"]
     """
 
-    parser = PandasParser("input_csv", "df1")
+    parser = PandasParser("input_csv", "df2")
     parser.parse(code)
     parser.dag.visualize()
+    print(parser.dag.to_pyspark("input_csv", parser.end_node_name))

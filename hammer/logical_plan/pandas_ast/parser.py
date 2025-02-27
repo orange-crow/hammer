@@ -7,7 +7,7 @@ from ..operations.build_ops import _DATA_METHOD_OPERATION
 
 
 class PandasParser(ast.NodeVisitor):
-    def __init__(self, start_node_name: List[str], end_node_name: str):
+    def __init__(self, start_node_name: List[str], end_node_name: str = None):
         self.dag = LogicalPlan()
         self.start_node_name = [start_node_name] if isinstance(start_node_name, str) else start_node_name
         self.end_node_name = end_node_name
@@ -145,3 +145,5 @@ class PandasParser(ast.NodeVisitor):
                 if var_name:
                     self.dag.add_edge(source, var_name)
                     # self.dag.visualize()
+                    self.end_node_name = self.dag.get_last_node(var_name)
+                    # FIXME: 不支持对赋值时等号两边出现相同变量名，例如 df2 = df2["value"]
