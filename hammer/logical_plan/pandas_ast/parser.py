@@ -137,12 +137,11 @@ class PandasParser(ast.NodeVisitor):
             return var_name, source
 
     def parse(self, code: str):
+        # TODO: 解析自定义函数为udf节点
         lines = code.strip().split("\n")
-        pipelines = []
         for line in lines:
             if line.strip():  # 忽略空行
                 var_name, source = self.parse_line(line.strip())
                 if var_name:
                     self.dag.add_edge(source, var_name)
                     # self.dag.visualize()
-        return pipelines
