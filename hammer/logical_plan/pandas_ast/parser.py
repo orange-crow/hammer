@@ -1,5 +1,7 @@
 import ast
-from typing import List, Literal, Tuple
+import re
+from pprint import pprint
+from typing import Dict, List, Literal, Tuple
 
 from ...dataset.source import SUPPORT_FIEL_TYPES
 from ..logical_plan import LogicalPlan
@@ -10,7 +12,11 @@ class PandasParser(ast.NodeVisitor):
     def __init__(self, start_node_name: List[str], end_node_name: str = None):
         self.dag = LogicalPlan()
         self.start_node_name = [start_node_name] if isinstance(start_node_name, str) else start_node_name
-        self.end_node_name = end_node_name
+        self._end_node_name = end_node_name
+
+    @property
+    def end_node_name(self) -> str:
+        return self.dag.get_last_node(self._end_node_name)
 
     def get_main_nodes(
         self, node_type: Literal["data", "op"] = "data", end_node_name: str = None, prefix: str = None
@@ -142,9 +148,24 @@ class PandasParser(ast.NodeVisitor):
             elif source.endswith(SUPPORT_FIEL_TYPES):
                 self.dag.add_data_node(var_name, data_type="io", source=source)
 
-    def parse(self, code: str):
+    def parse_udf(self, code: str) -> Tuple[str, Dict]:
+        """解析用户自定义的函数"""
+        function_pattern = re.compile(r"def\s+(\w+)\(.*?\):\s*\n(?:[ \t]+.*\n)*")
+        # 查找所有匹配的函数
+        function_blocks = function_pattern.finditer(code)
+        function_dict = {}
+        for match in function_blocks:
+            func_name = match.group(1)
+            func_code = match.group(0)
+            function_dict[func_name] = func_code
+        non_function_code = function_pattern.sub("", code)
         # TODO: 解析自定义函数为udf节点
-        lines = code.strip().split("\n")
+        pprint(f"User define function :\n{function_dict}")
+        return non_function_code, function_dict
+
+    def parse(self, code: str, verbose: bool = False):
+        pipeline_code, udf_code = self.parse_udf(code)
+        lines = pipeline_code.strip().split("\n")
         for line in lines:
             if line.strip():  # 忽略空行
                 var_name, source, right_var_names, assign_node = self.parse_line(line.strip())
@@ -154,5 +175,5 @@ class PandasParser(ast.NodeVisitor):
                     self.dag.add_edge(
                         self.update_node_name(source), self.update_node_name(var_name), var_name in right_var_names
                     )
-                    self.end_node_name = self.dag.get_last_node(var_name)
-                    self.dag.visualize()
+                    if verbose:
+                        self.dag.visualize()
