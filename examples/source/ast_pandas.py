@@ -6,7 +6,7 @@ if __name__ == "__main__":
     input_csv = "./context/data/sample_data.csv"
     df1 = pd.read_csv(input_csv)
     df2 = df1.groupby("category")["value"].sum()
-    df3 = df2["value"]
+    df2 = df2["value"]
     """
 
     parser = PandasParser("input_csv", "df2")

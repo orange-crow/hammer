@@ -1,5 +1,5 @@
 import ast
-from typing import List, Literal
+from typing import List, Literal, Tuple
 
 from ...dataset.source import SUPPORT_FIEL_TYPES
 from ..logical_plan import LogicalPlan
@@ -38,25 +38,18 @@ class PandasParser(ast.NodeVisitor):
 
     def update_node_name(self, node_name: str) -> str:
         # 记录数据流: 例如 read_csv 产生 df1
-        if node_name.startswith("read_"):
+        if node_name and node_name.startswith("read_"):
             node_name = f"pd.{node_name}"
         return node_name
 
-    def visit_Assign(self, node):
+    def visit_Assign(self, node) -> Tuple:
         """解析变量赋值，记录变量名及其来源"""
         if isinstance(node.targets[0], ast.Name):
             var_name = node.targets[0].id  # 变量名
             source = self._get_source(node.value)
-            # dag
-            if source:
-                if not isinstance(node.value, ast.Constant):
-                    self.dag.add_data_node(var_name, data_type="memory")
-                    source = self.update_node_name(source)
-                elif source.endswith(SUPPORT_FIEL_TYPES):
-                    self.dag.add_data_node(var_name, data_type="io", source=source)
-                return var_name, source
+            return var_name, source, node
 
-    def visit_Call(self, node):
+    def visit_Call(self, node) -> List[str]:
         """解析函数调用，例如 pd.read_csv(input_csv)"""
         func_name = self._get_func_name(node.func)
         func_name = self.update_node_name(func_name)
@@ -67,13 +60,18 @@ class PandasParser(ast.NodeVisitor):
         func_args = [func_args] if isinstance(func_args, str) else func_args
         input_nodes = [n for n in func_args if self.dag.has_node(n)]
         self.dag.add_operation_node(func_name, func_name, func_args, func_keywords, input_nodes=input_nodes)
+        # 返回入参中的数据节点
+        return [n for n in input_nodes if self.dag[n]["type"] == "data"]
 
-    def visit_Subscript(self, node):
+    def visit_Subscript(self, node) -> List[str]:
         """解析 DataFrame 列选择，例如 df["value"]"""
         col_name = self._get_arg_value(node.slice)
-        source = self._get_source(node.value)
+        #
+        obj = self._get_source(node.value)
         # dag
-        self.dag.add_operation_node("select", "select", col_name, input_nodes=source)
+        self.dag.add_operation_node("select", "select", col_name, input_nodes=obj)
+        # 返回obj[x]中的obj
+        return [obj]
 
     def _get_func_name(self, node):
         """获取函数名"""
@@ -121,29 +119,40 @@ class PandasParser(ast.NodeVisitor):
     def parse_line(self, line):
         try:
             tree = ast.parse(line)
-            var_name, source = None, None
+            var_name, source, assign_node, right_var_names = None, None, None, []
             for node in ast.walk(tree):
                 for child in ast.iter_child_nodes(node):
                     child.parent = node  # 给AST节点添加父节点信息
                 if isinstance(node, ast.Assign):
-                    var_name, source = self.visit_Assign(node)
+                    var_name, source, assign_node = self.visit_Assign(node)
                 elif isinstance(node, ast.Call):
-                    self.visit_Call(node)
+                    right_var_names.extend(self.visit_Call(node))
                 elif isinstance(node, ast.Subscript):
-                    self.visit_Subscript(node)
-            return var_name, source
+                    right_var_names.extend(self.visit_Subscript(node))
+            return var_name, source, right_var_names, assign_node
         except SyntaxError:
             print(f"语法错误: {line}")
-            return var_name, source
+            return var_name, source, right_var_names, assign_node
+
+    def add_data_node(self, var_name, source, assign_node: ast.Assign):
+        source = self.update_node_name(source)
+        if source:
+            if not isinstance(assign_node.value, ast.Constant):
+                self.dag.add_data_node(var_name, data_type="memory")
+            elif source.endswith(SUPPORT_FIEL_TYPES):
+                self.dag.add_data_node(var_name, data_type="io", source=source)
 
     def parse(self, code: str):
         # TODO: 解析自定义函数为udf节点
         lines = code.strip().split("\n")
         for line in lines:
             if line.strip():  # 忽略空行
-                var_name, source = self.parse_line(line.strip())
+                var_name, source, right_var_names, assign_node = self.parse_line(line.strip())
                 if var_name:
-                    self.dag.add_edge(source, var_name)
-                    # self.dag.visualize()
+                    # create right var_name as data node
+                    self.add_data_node(var_name, source, assign_node)
+                    self.dag.add_edge(
+                        self.update_node_name(source), self.update_node_name(var_name), var_name in right_var_names
+                    )
                     self.end_node_name = self.dag.get_last_node(var_name)
-                    # FIXME: 不支持对赋值时等号两边出现相同变量名，例如 df2 = df2["value"]
+                    self.dag.visualize()

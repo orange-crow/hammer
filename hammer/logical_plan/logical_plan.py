@@ -47,7 +47,7 @@ class LogicalPlan(object):
             else:
                 raise ValueError
 
-    def add_edge(self, from_node: str, to_node: str):
+    def add_edge(self, from_node: str, to_node: str, has_duplicated_var: bool = False):
         self.graph.add_edge(self.get_last_node(from_node), self.get_last_node(to_node))
 
     def visualize(self):
