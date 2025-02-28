@@ -6,15 +6,15 @@ from .operation import OperationNode
 
 @register_op()
 class GroupbyOp(OperationNode):
-    pandas_name: str = "groupby"
+    function_name: str = "groupby"
 
     def __init__(
         self,
-        pandas_positional_args: List,
-        pandas_keyword_args: Dict[str, Any] = None,
+        function_positional_args: List,
+        function_keyword_args: Dict[str, Any] = None,
     ):
-        super().__init__("groupby", pandas_positional_args, pandas_keyword_args)
-        self.by = self.pandas_keyword_args.get("by")
+        super().__init__("groupby", function_positional_args, function_keyword_args)
+        self.by = self.function_keyword_args.get("by")
 
     @property
     def is_data_method(self) -> bool:

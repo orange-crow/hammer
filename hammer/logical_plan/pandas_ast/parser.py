@@ -148,7 +148,8 @@ class PandasParser(ast.NodeVisitor):
             elif source.endswith(SUPPORT_FIEL_TYPES):
                 self.dag.add_data_node(var_name, data_type="io", source=source)
 
-    def parse_udf(self, code: str) -> Tuple[str, Dict]:
+    @staticmethod
+    def parse_function(code: str) -> Tuple[str, Dict]:
         """解析用户自定义的函数"""
         function_pattern = re.compile(r"def\s+(\w+)\(.*?\):\s*\n(?:[ \t]+.*\n)*")
         # 查找所有匹配的函数
@@ -159,12 +160,17 @@ class PandasParser(ast.NodeVisitor):
             func_code = match.group(0)
             function_dict[func_name] = func_code
         non_function_code = function_pattern.sub("", code)
-        # TODO: 解析自定义函数为udf节点
-        pprint(f"User define function :\n{function_dict}")
         return non_function_code, function_dict
 
+    def parse_udf(self, code: str) -> Tuple[str, Dict]:
+        non_function_code, function_dict = self.parse_function(code)
+        for udf_name, udf_block in function_dict.items():
+            self.dag.add_operation_node(udf_name, "udf", udf_name=udf_name, udf_block=udf_block)
+        pprint(f"User define function :\n{function_dict}")
+        return non_function_code
+
     def parse(self, code: str, verbose: bool = False):
-        pipeline_code, udf_code = self.parse_udf(code)
+        pipeline_code = self.parse_udf(code)
         lines = pipeline_code.strip().split("\n")
         for line in lines:
             if line.strip():  # 忽略空行

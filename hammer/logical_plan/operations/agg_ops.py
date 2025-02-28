@@ -6,7 +6,7 @@ from .operation import OperationNode
 
 @register_op()
 class SumOp(OperationNode):
-    pandas_name: str = "sum"
+    function_name: str = "sum"
 
     def __init__(self):
         super().__init__("sum", None, None)

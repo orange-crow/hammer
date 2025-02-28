@@ -4,6 +4,7 @@ import networkx as nx
 
 from .data_node import DataNode
 from .operations import OperationNode, create_ops
+from .operations.build_ops import _OPERATION_REGISTRY
 
 
 class LogicalPlan(object):
@@ -24,18 +25,44 @@ class LogicalPlan(object):
     def add_operation_node(
         self,
         node_name: str,  # show in dag
-        pandas_name: str,
-        pandas_positional_args: List = None,
-        pandas_keyword_args: Dict[str, Any] = None,
+        function_name: str,
+        function_positional_args: List = None,
+        function_keyword_args: Dict[str, Any] = None,
         input_nodes: Union[str, List] = None,
         *,
         target_ops: dict[str, str] = None,
+        udf_name: str = None,
+        udf_block: str = None,
     ):
-        self.graph.add_node(
-            self.rename_node(node_name),
-            type="op",
-            obj=create_ops(pandas_name, pandas_positional_args, pandas_keyword_args, target_ops=target_ops),
-        )
+        # 处理 udf 的注册
+        if function_name not in _OPERATION_REGISTRY or function_name == "udf":
+            udf_name = node_name
+            # 如果 udf 已经注册过, 则获取 udf_block
+            if self.has_node(udf_name):
+                udf_block = self[udf_name]["obj"].udf_block
+
+            self.graph.add_node(
+                self.rename_node(node_name),
+                type="op",
+                obj=create_ops(
+                    "udf", function_positional_args, function_keyword_args, udf_name=udf_name, udf_block=udf_block
+                ),
+            )
+
+        # 处理 pandas 内置函数的注册
+        else:
+            self.graph.add_node(
+                self.rename_node(node_name),
+                type="op",
+                obj=create_ops(
+                    function_name,
+                    function_positional_args,
+                    function_keyword_args,
+                    target_ops=target_ops,
+                    udf_name=udf_name,
+                    udf_block=udf_block,
+                ),
+            )
 
         if input_nodes:
             if isinstance(input_nodes, str):

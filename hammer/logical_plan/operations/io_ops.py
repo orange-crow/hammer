@@ -6,16 +6,16 @@ from .operation import OperationNode
 
 @register_op()
 class ReadcsvOp(OperationNode):
-    # 设置 pandas_name 类属性, 作为注册时的标识.
-    pandas_name: str = "pd.read_csv"
+    # 设置 function_name 类属性, 作为注册时的标识.
+    function_name: str = "pd.read_csv"
 
     def __init__(
         self,
-        pandas_positional_args: List,
-        pandas_keyword_args: Dict[str, Any] = None,
+        function_positional_args: List,
+        function_keyword_args: Dict[str, Any] = None,
     ):
-        super().__init__("pd.read_csv", pandas_positional_args, pandas_keyword_args)
-        self.file_path = self.pandas_keyword_args.get("filepath_or_buffer")
+        super().__init__("pd.read_csv", function_positional_args, function_keyword_args)
+        self.file_path = self.function_keyword_args.get("filepath_or_buffer")
 
     @property
     def is_data_method(self) -> bool:
