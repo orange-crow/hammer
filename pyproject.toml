@@ -26,6 +26,7 @@ clickhouse-connect = "^0.8.15"
 tenacity = "^9.0.0"
 networkx = "^3.4.2"
 pyspark = "3.5.4"
+typeguard = "^4.4.2"
 
 [tool.poetry.extras]
 bigdata = ["ray", "modin"]
