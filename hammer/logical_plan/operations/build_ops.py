@@ -24,16 +24,20 @@ def register_op() -> type:
 
 
 def create_ops(
-    pandas_func_name: str,
-    function_positional_args: List,
+    pandas_func_name: str = None,
+    function_positional_args: List = None,
     function_keyword_args: Dict[str, Any] = None,
     *,
     target_ops: Dict = None,
     udf_name: str = None,
     udf_block: str = None,
+    **kwargs,
 ):
     function_positional_args = function_positional_args or []
     function_keyword_args = function_keyword_args or {}
+
+    pandas_func_name = kwargs.get("function_name") or pandas_func_name
+
     if udf_name is None:
         op_cls = _OPERATION_REGISTRY.get(pandas_func_name)
         if op_cls is None:

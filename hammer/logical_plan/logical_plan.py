@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, List, Literal, Union
 
 import networkx as nx
@@ -8,9 +9,59 @@ from .operations.build_ops import _OPERATION_REGISTRY
 
 
 class LogicalPlan(object):
-    def __init__(self):
+    def __init__(self, graph: nx.DiGraph = None):
         """Initializes an empty Directed Acyclic Graph (DAG)."""
-        self.graph = nx.DiGraph()
+        self.graph = graph or nx.DiGraph()
+
+    def __eq__(self, other: "LogicalPlan"):
+        if not isinstance(other, LogicalPlan):
+            raise TypeError("Comparisons should only involve LogicalPlan class objects.")
+
+        if self.graph.nodes._nodes.keys() != other.graph.nodes._nodes.keys() or self.graph.edges != other.graph.edges:
+            return False
+        return True
+
+    def to_json(self) -> str:
+        """Convert the LogicalPlan to a json string."""
+        data = nx.node_link_data(self.graph)
+        nodes = []
+        for n in data["nodes"]:
+            n["obj"] = n["obj"].to_json()
+            nodes.append(n)
+        data.update({"nodes": nodes})
+        return json.dumps(data)
+
+    @classmethod
+    def from_json(cls, logical_plan_json: str) -> "LogicalPlan":
+        data = json.loads(logical_plan_json)
+        nodes = []
+        for n in data["nodes"]:
+            if n["type"] == "data":
+                n["obj"] = DataNode.from_json(n["obj"])
+            else:
+                n["obj"] = create_ops(**json.loads(n["obj"]))
+            nodes.append(n)
+        data.update({"nodes": nodes})
+        # 创建新图
+        graph = nx.DiGraph()
+        graph.graph.update(data.get("graph", {}))
+
+        # 添加节点
+        for node_data in data["nodes"]:
+            attrs = {
+                "type": node_data["type"],
+                "obj": node_data["obj"],
+            }
+            graph.add_node(node_data["id"], **attrs)
+
+        # 添加边
+        for edge_data in data["links"]:
+            graph.add_edge(
+                edge_data["source"],
+                edge_data["target"],
+            )
+
+        return cls(graph)
 
     def add_data_node(self, name: str, data_type: Literal["io", "memory", "sql"], source: str = None):
         """Adds a data node to the DAG.
