@@ -27,6 +27,11 @@ tenacity = "^9.0.0"
 networkx = "^3.4.2"
 pyspark = "3.5.4"
 typeguard = "^4.4.2"
+wrapt = "^1.17.2"
+tornado = "^6.4.2"
+sqlalchemy = "^2.0.38"
+asyncpg = "^0.30.0"
+greenlet = "^3.1.1"
 
 [tool.poetry.extras]
 bigdata = ["ray", "modin"]
