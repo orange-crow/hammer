@@ -70,3 +70,125 @@ class Postgres(AsyncEngineBase):
                 print(f"Table '{table_name}' created successfully.")
             else:
                 print(f"Table '{table_name}' not in registry.")
+
+    async def read(self, table_name: str, filters: dict = None):
+        """
+        异步读取数据库表中的数据。
+
+        Args:
+            table_name (str): 要查询的表名
+            filters (dict, optional): 查询过滤条件，例如 {"name": "test", "version": "1.0"}
+
+        Returns:
+            list: 查询结果列表，每个元素是一个字典
+
+        Raises:
+            ValueError: 如果表名不存在于注册表中
+        """
+        # 获取表对象
+        table = Base.metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"Table '{table_name}' not found in metadata registry")
+
+        async with self.create_engine(self.url_with_db).connect() as conn:
+            # 构建基本查询
+            query = table.select()
+
+            # 添加过滤条件
+            if filters:
+                for key, value in filters.items():
+                    if key in table.columns:
+                        query = query.where(table.columns[key] == value)
+
+            # 执行查询
+            result = await conn.execute(query)
+
+            # 将结果转换为字典列表
+            rows = [dict(row._mapping) for row in result]
+            return rows
+
+    async def write(self, table_name: str, data: dict | list[dict], upsert: bool = False):
+        """
+        异步向数据库表中写入数据。
+
+        Args:
+            table_name (str): 要写入的表名
+            data (dict | list[dict]): 要写入的数据，可以是单个字典或字典列表
+            upsert (bool): 如果为 True，当主键冲突时更新记录，否则插入新记录
+
+        Returns:
+            int: 受影响的行数
+
+        Raises:
+            ValueError: 如果表名不存在于注册表中或数据格式不正确
+        """
+        # 获取表对象
+        table = Base.metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"Table '{table_name}' not found in metadata registry")
+
+        # 确保数据是列表格式
+        if isinstance(data, dict):
+            data = [data]
+        elif not isinstance(data, list):
+            raise ValueError("Data must be a dictionary or list of dictionaries")
+
+        # 检查数据字段是否有效
+        valid_columns = set(table.columns.keys())
+        for item in data:
+            invalid_columns = set(item.keys()) - valid_columns
+            if invalid_columns:
+                raise ValueError(f"Invalid columns found: {invalid_columns}")
+
+        async with self.create_engine(self.url_with_db).begin() as conn:
+            stmt = table.insert()
+            if upsert:
+                # 使用 PostgreSQL 的 ON CONFLICT 实现 upsert
+                stmt = stmt.values(data).on_conflict_do_update(
+                    index_elements=[table.primary_key.columns.keys()[0]],  # 使用主键
+                    set_={
+                        col: stmt.excluded[col] for col in data[0].keys() if col != table.primary_key.columns.keys()[0]
+                    },
+                )
+            else:
+                # 普通插入
+                stmt = stmt.values(data)
+
+            result = await conn.execute(stmt)
+            return result.rowcount
+
+    async def delete(self, table_name: str, filters: dict = None):
+        """
+        异步从数据库表中删除指定数据。
+
+        Args:
+            table_name (str): 要操作的表名
+            filters (dict, optional): 删除条件，例如 {"name": "test", "version": "1.0"}
+                                    如果为空，则删除表中所有数据
+
+        Returns:
+            int: 删除的行数
+
+        Raises:
+            ValueError: 如果表名不存在于注册表中
+        """
+        # 获取表对象
+        table = Base.metadata.tables.get(table_name)
+        if table is None:
+            raise ValueError(f"Table '{table_name}' not found in metadata registry")
+
+        async with self.create_engine(self.url_with_db).begin() as conn:
+            # 构建删除语句
+            stmt = table.delete()
+
+            # 添加过滤条件
+            if filters:
+                for key, value in filters.items():
+                    if key in table.columns:
+                        stmt = stmt.where(table.columns[key] == value)
+                    else:
+                        raise ValueError(f"Invalid filter column: {key}")
+
+            # 执行删除
+            result = await conn.execute(stmt)
+            return result.rowcount
