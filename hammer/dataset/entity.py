@@ -4,6 +4,8 @@ from typing import Dict, List
 
 from typeguard import typechecked
 
+from ..core.protos.entity_pb2 import Entity as EntityProto
+
 
 @typechecked
 @dataclass
@@ -44,3 +46,10 @@ class Entity:
     def from_json(cls, value: str) -> "Entity":
         val = json.loads(value)
         return cls.from_dict(val)
+
+    def to_proto(self) -> EntityProto:
+        return EntityProto(name=self.name, join_keys=self.join_keys)
+
+    @classmethod
+    def from_proto(cls, value: EntityProto) -> "Entity":
+        return cls(name=value.name, join_keys=value.join_keys)

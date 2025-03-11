@@ -27,7 +27,7 @@ if _version_not_supported:
 
 
 class EntityServiceStub(object):
-    """服务定义"""
+    """Entity 服务定义"""
 
     def __init__(self, channel):
         """Constructor.
@@ -50,16 +50,16 @@ class EntityServiceStub(object):
 
 
 class EntityServiceServicer(object):
-    """服务定义"""
+    """Entity 服务定义"""
 
     def CreateEntity(self, request, context):
-        """创建实体"""
+        """创建新 Entity"""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
 
     def GetEntity(self, request, context):
-        """查询实体"""
+        """查询 Entity"""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
         raise NotImplementedError("Method not implemented!")
@@ -85,7 +85,7 @@ def add_EntityServiceServicer_to_server(servicer, server):
 
 # This class is part of an EXPERIMENTAL API.
 class EntityService(object):
-    """服务定义"""
+    """Entity 服务定义"""
 
     @staticmethod
     def CreateEntity(
