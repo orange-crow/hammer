@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package entity;
+
+// Entity 消息定义
+message Entity {
+  int32 id = 1;
+  string name = 2;
+  repeated string join_keys = 3;  // JSON List 映射为 repeated string
+}
+
+// 写入请求
+message CreateEntityRequest {
+  string name = 1;
+  repeated string join_keys = 2;
+}
+
+message CreateEntityResponse {
+  int32 id = 1;
+  string name = 2;
+  repeated string join_keys = 3;
+}
+
+// 查询请求
+message GetEntityRequest {
+  oneof query {
+    int32 id = 1;
+    string name = 2;
+  }
+}
+
+message GetEntityResponse {
+  Entity entity = 1;
+}
+
+// 服务定义
+service EntityService {
+  // 创建实体
+  rpc CreateEntity (CreateEntityRequest) returns (CreateEntityResponse) {}
+  
+  // 查询实体
+  rpc GetEntity (GetEntityRequest) returns (GetEntityResponse) {}
+}

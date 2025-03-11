@@ -1,5 +1,8 @@
+from contextlib import asynccontextmanager
+
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from .base import Base
 
@@ -44,6 +47,20 @@ class Postgres(AsyncEngineBase):
         super().__init__(url_default, host=host, port=port, user=user, password=password, database=database)
         self.url_default = url_default
         self.url_with_db = url_with_db
+        self._async_engine = None
+        self._session_factory = None
+
+    @property
+    def async_engine(self):
+        if self._async_engine is None:
+            self._async_engine = self.create_engine(self.url_with_db)
+        return self._async_engine
+
+    @property
+    def session_factory(self):
+        if self._session_factory is None:
+            self._session_factory = sessionmaker(self.async_engine, class_=AsyncSession, expire_on_commit=False)
+        return self._session_factory
 
     async def create_database(self, database: str):
         self._database = database
@@ -192,3 +209,11 @@ class Postgres(AsyncEngineBase):
             # 执行删除
             result = await conn.execute(stmt)
             return result.rowcount
+
+    @asynccontextmanager
+    async def get_db_session(self):
+        async_session = self.session_factory()
+        try:
+            yield async_session
+        finally:
+            await async_session.close()
