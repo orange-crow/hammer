@@ -1,6 +1,6 @@
 from .files import SUPPORT_FIEL_TYPES
 from .base import ClientBase, DataSource
-from .base import BatchSource
+from .batch import BatchSource
 
 
 __all__ = [
