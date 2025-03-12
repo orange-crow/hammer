@@ -119,3 +119,6 @@ class DataSource(object):
             description=value.description,
             config=value.config,
         )
+
+    def head(self, n: int = 5):
+        raise NotImplementedError
