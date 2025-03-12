@@ -34,6 +34,7 @@ asyncpg = "^0.30.0"
 greenlet = "^3.1.1"
 grpcio = "^1.71.0"
 grpcio-tools = "^1.71.0"
+psycopg2 = "^2.9.10"
 
 [tool.poetry.extras]
 bigdata = ["ray", "modin"]

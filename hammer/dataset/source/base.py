@@ -5,6 +5,7 @@ from hammer.core.protos.source_pb2 import Source as SourceProto
 from hammer.dataset.table import PandasTable
 from hammer.utils.client.clickhouse import ClickHouseClient
 from hammer.utils.client.client import ClientBase
+from hammer.utils.client.postgres import PostgresClient
 
 
 class DataSource(object):
@@ -15,7 +16,7 @@ class DataSource(object):
         name: str,
         version: str,
         table_name: str,
-        infra_type: Literal["clickhouse", "oracle"],
+        infra_type: Literal["clickhouse", "oracle", "postgres"],
         infra_name: str = None,  # 等价于 config，是client的配置参数
         *,
         filter_conditions: str = None,
@@ -75,6 +76,8 @@ class DataSource(object):
         if self._client is None:
             if self.infra_type == "clickhouse":
                 self._client = ClickHouseClient(**self.client_config)
+            elif self.infra_type == "postgres":
+                self._client = PostgresClient(**self.client_config)
             else:
                 raise NotImplementedError
         return self._client
@@ -82,7 +85,7 @@ class DataSource(object):
     @property
     def data(self) -> PandasTable:
         if self._data is None:
-            self._data = self.client.read(self.fetch_data_sql)
+            self._data = PandasTable(self.client.read(self.fetch_data_sql)).copy()
         return self._data
 
     def to_dict(self):

@@ -2,6 +2,7 @@ from functools import cached_property
 from typing import Any, Dict, Optional
 
 import pandas as pd
+from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 
@@ -21,7 +22,7 @@ class ClientBase(object):
         host: str,
         port: str,
         database: str = None,
-        service_name: Optional[str] = None
+        service_name: Optional[str] = None,
     ) -> None:
         self._user = user
         self._password = password
@@ -77,6 +78,7 @@ class ClientBase(object):
         retry=lambda exception: isinstance(exception, ConnectionRefusedError),
     )
     def read(self, query_or_file_path: str, *args, **kwargs) -> pd.DataFrame:
+        logger.info(f"Read data by \n{query_or_file_path}")
         with self.connect() as connection:
             return self._read(connection, query_or_file_path, *args, **kwargs)
 

@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Optional
 
 import clickhouse_connect
 import pandas as pd
@@ -53,9 +53,3 @@ class ClickHouseClient(ClientBase):
     def _read(self, connection: Client, query_or_file_path: str, *args, **kwargs) -> pd.DataFrame:
         """使用 ClickHouse 连接执行查询并返回 DataFrame"""
         return connection.query_df(query_or_file_path, *args, **kwargs)
-
-    def to_dict(self) -> Dict[str, str]:
-        """重写 to_dict，添加 database 参数"""
-        base_dict = super().to_dict()
-        base_dict["database"] = self._database
-        return base_dict

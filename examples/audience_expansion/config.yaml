@@ -1,9 +1,0 @@
-data_schema:
-  # 这里记录数据的scheme和数据类型
-  - Y: int, target
-  - YEARWEEK: datetime, main_time
-  - SKU_ID: int, entity_1
-  - STORE_ID: int, entity_2
-  - SPU_ID: int, entity_1*1
-  - CHANNEL_ID: int, entity_2*1
-  - QUANTITY: int
