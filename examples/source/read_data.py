@@ -1,29 +1,19 @@
 import fire
 
-from hammer.dataset.source import BatchSource, ClickHouseConfig
+from hammer.config import CONF
+from hammer.utils.client.clickhouse import ClickHouseClient
 
 
-def batchsource_read_data(database: str, table: str):
-    source = BatchSource(
-        name="clickhouse1", source_config=ClickHouseConfig(name="clickhouse1", database=database, table=table)
-    )
-    df = source.to_pandas()
+def read_version():
+    chconf = CONF.infra.get("clickhouse").get("clickhouse1")
+    client = ClickHouseClient(**chconf)
+    df = client.read("SELECT name, type as dtype FROM system.columns")
     print(df)
 
-
-def batchsource_read_data2(database: str, table: str):
-    source = BatchSource(
-        name="clickhouse1",
-        source_config=ClickHouseConfig(
-            name="clickhouse1",
-            database=database,
-            table=table,
-            target_fields=["item_idnt", "item_desc", "time_to_market", "cb_level3_category_name"],
-        ),
-    )
-    print(source.source_config.target_fields)
-    df = source.to_pandas()
-    print(df)
+    # 上下文管理器示例
+    with client:
+        df = client.read("SELECT name, type as dtype FROM system.columns")
+        print(f"ClickHouse Version: {df}")
 
 
 if __name__ == "__main__":

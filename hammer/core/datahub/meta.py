@@ -1,13 +1,12 @@
-from sqlalchemy import Column, Integer, String, UniqueConstraint
+from sqlalchemy import Column, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSON
 
 from ..base import Base
 
 
 class Metadata(Base):
-    __tablename__ = "hammer_meta"
+    __tablename__ = "meta"
 
-    id = Column(Integer, primary_key=True)
     name = Column(String(256), nullable=False)
     version = Column(String(256), nullable=False)
     lineage_id = Column(String(36))

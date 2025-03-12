@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package source;
+
+message Source {
+  string name = 1;                       // 主键
+  string version = 2;                    // 主键
+  string table_name = 3;
+  string infra_type = 4;
+  map<string, string> field_mapping = 5; // 数据表格字段映射: Dict
+  string owner = 6;
+  string description = 7;
+  map<string, string> config = 8;        // 数据源配置信息: Dict
+}
