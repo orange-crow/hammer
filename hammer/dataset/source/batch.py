@@ -85,7 +85,7 @@ class BatchSource(DataSource):
         return self.schema["column_name"].tolist()
 
     def _get_postgres_isnull(self) -> PandasTable:
-        counts = [f"COUNT(*) FILTER (WHERE {column} IS NULL) AS {column}_nulls" for column in self.columns]
+        counts = [f"COUNT(*) FILTER (WHERE {column} IS NULL) AS {column}" for column in self.columns]
         sql = f"""
         SELECT
             {',\n'.join(counts)},\nCOUNT(*) as nrows
@@ -94,7 +94,7 @@ class BatchSource(DataSource):
         return self.client.read(sql)
 
     def _get_clickhouse_isnull(self) -> PandasTable:
-        counts = [f"COUNTIf({column} IS NULL) AS {column}_nulls" for column in self.columns]
+        counts = [f"COUNTIf({column} IS NULL) AS {column}" for column in self.columns]
         sql = f"""
         SELECT
             {',\n'.join(counts)},\nCOUNT(*) as nrows
@@ -103,7 +103,7 @@ class BatchSource(DataSource):
         return self.client.read(sql)
 
     def _get_oracle_isnull(self) -> PandasTable:
-        counts = [f"COUNT(CASE WHEN {column} IS NULL THEN 1 END) AS {column}_nulls" for column in self.columns]
+        counts = [f"COUNT(CASE WHEN {column} IS NULL THEN 1 END) AS {column}" for column in self.columns]
         sql = f"""
         SELECT
             {',\n'.join(counts)},\nCOUNT(*) as nrows
@@ -122,7 +122,7 @@ class BatchSource(DataSource):
                 self._nulls_count = self._get_oracle_isnull().copy()
             else:
                 raise ValueError
-        return self._nulls_count
+        return self._nulls_count.T
 
-    def isnull(self) -> PandasTable:
+    def count_nulls(self) -> PandasTable:
         return self.nulls_count
