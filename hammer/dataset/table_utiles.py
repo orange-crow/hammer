@@ -54,6 +54,13 @@ def plot_prob(s: pd.Series):
     stats.probplot(s, plot=ax[1])
 
 
+def interaction_bar(x: str, y: str, data: pd.DataFrame):
+    plt.figure(figsize=(8, 6))
+    plt.title(f"Interaction between {x} and {y}")
+    sns.countplot(data, x=x, hue=y)
+    plt.show()
+
+
 def reduce_memory(df: pd.DataFrame):
     # 打印压缩前的内存占用
     print(f"Memory usage before compression: {df.memory_usage(deep=True).sum() / 1024**2} MB")

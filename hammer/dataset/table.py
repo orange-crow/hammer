@@ -12,7 +12,13 @@ from pandas.core.indexing import _LocIndexer
 from ..schema import TableSchema
 from ..utils.schema import init_schema
 from .table_base import TableBase
-from .table_utiles import missing_info, plot_pie_bar, plot_prob, reduce_memory
+from .table_utiles import (
+    interaction_bar,
+    missing_info,
+    plot_pie_bar,
+    plot_prob,
+    reduce_memory,
+)
 
 
 def wrape_result(result: Any):
@@ -367,12 +373,19 @@ class PandasTable(pd.DataFrame, TableBase):
     def plot_prob(s: pd.Series):
         plot_prob(s)
 
-    def distribution(self, target_col: str) -> None:
+    def distribution(self, target_col: str, x: str = None) -> None:
         nunique_val = self[target_col].nunique()
         if nunique_val < 10 and self[target_col].dtype.name.startswith(("int", "category", "object")):
-            self.plot_pie_bar(self[target_col])
+            if x is None:
+                self.plot_pie_bar(self[target_col])
+            else:
+                interaction_bar(x, target_col, self)
         else:
             self.plot_prob(self[target_col])
 
     def reduce_memory(self) -> "PandasTable":
         reduce_memory(self)
+
+    def copy(self, deep=...):
+        df = super().copy(deep)
+        return PandasTable(df, schema=self._schema)
