@@ -51,13 +51,11 @@ class PostgresClient(ClientBase):
     def _read(self, connection, query_or_file_path: str, *args, **kwargs) -> pd.DataFrame:
         """使用 PostgreSQL 连接执行查询并返回 DataFrame"""
         with connection.cursor() as cursor:
-            if (
-                len(query_or_file_path.split("\n")) < 3
-            ):  # 规定遇到SQL关键词得要换行，例如，select * \nfrom db.table\nwhere xxxx
+            if kwargs.get("use_copy"):
                 output = io.StringIO()
                 cursor.copy_expert(f"COPY ({query_or_file_path}) TO STDOUT WITH CSV HEADER", output)
                 output.seek(0)
-                df = pd.read_csv(output)
+                df = pd.read_csv(output, engine="pyarrow")
             else:
                 cursor.execute(query_or_file_path, *args)
                 columns = [desc[0] for desc in cursor.description]

@@ -24,6 +24,7 @@ class DataSource(object):
         owner: str = None,
         description: str = None,
         config: Dict = None,
+        use_copy: bool = False,
     ):
         self.name = name
         self.version = version
@@ -46,6 +47,7 @@ class DataSource(object):
         self._client = None
         self._data: PandasTable = None
         self._fetch_data_sql = None
+        self._use_copy = use_copy
 
     @property
     def __hash_key__(self):
@@ -85,7 +87,7 @@ class DataSource(object):
     @property
     def data(self) -> PandasTable:
         if self._data is None:
-            self._data = self.client.read(self.fetch_data_sql)
+            self._data = self.client.read(self.fetch_data_sql, use_copy=self._use_copy)
         return self._data
 
     def to_dict(self):
