@@ -1,3 +1,4 @@
+import io
 from typing import Optional
 
 import pandas as pd
@@ -18,7 +19,7 @@ class PostgresClient(ClientBase):
         port: str,
         database: str,
         service_name: Optional[str] = None,
-        pool_size: int = 5
+        pool_size: int = 5,
     ):
         self._database = database
         self._pool_size = pool_size
@@ -50,8 +51,17 @@ class PostgresClient(ClientBase):
     def _read(self, connection, query_or_file_path: str, *args, **kwargs) -> pd.DataFrame:
         """使用 PostgreSQL 连接执行查询并返回 DataFrame"""
         with connection.cursor() as cursor:
-            cursor.execute(query_or_file_path, *args)
-            columns = [desc[0] for desc in cursor.description]
-            data = cursor.fetchall()
-            return pd.DataFrame(data, columns=columns)
+            if (
+                len(query_or_file_path.split("\n")) < 3
+            ):  # 规定遇到SQL关键词得要换行，例如，select * \nfrom db.table\nwhere xxxx
+                output = io.StringIO()
+                cursor.copy_expert(f"COPY ({query_or_file_path}) TO STDOUT WITH CSV HEADER", output)
+                output.seek(0)
+                df = pd.read_csv(output)
+            else:
+                cursor.execute(query_or_file_path, *args)
+                columns = [desc[0] for desc in cursor.description]
+                data = cursor.fetchall()
+                df = pd.DataFrame(data, columns=columns)
         self.release(connection)
+        return df
