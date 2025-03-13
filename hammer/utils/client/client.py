@@ -5,6 +5,8 @@ import pandas as pd
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
+from hammer.dataset.table import PandasTable
+
 
 class ClientBase(object):
     """数据引擎的客户端基类，必须使用连接池
@@ -77,10 +79,10 @@ class ClientBase(object):
         wait=wait_fixed(2),
         retry=lambda exception: isinstance(exception, ConnectionRefusedError),
     )
-    def read(self, query_or_file_path: str, *args, **kwargs) -> pd.DataFrame:
+    def read(self, query_or_file_path: str, *args, **kwargs) -> PandasTable:
         logger.info(f"Read data by \n{query_or_file_path}")
         with self.connect() as connection:
-            return self._read(connection, query_or_file_path, *args, **kwargs)
+            return PandasTable(self._read(connection, query_or_file_path, *args, **kwargs))
 
     def __enter__(self) -> "ClientBase":
         """支持上下文管理器，返回自身"""

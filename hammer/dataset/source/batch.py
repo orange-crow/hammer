@@ -122,7 +122,12 @@ class BatchSource(DataSource):
                 self._nulls_count = self._get_oracle_isnull().copy()
             else:
                 raise ValueError
-        return self._nulls_count.T
+            self._nulls_count = self._nulls_count.T
+            self._nulls_count.columns = ["null_counts"]
+            self._nulls_count["nrows"] = [self._nulls_count.loc["nrows", "null_counts"]] * len(self._nulls_count)
+            self._nulls_count["null_percent"] = (self._nulls_count["null_counts"] / self._nulls_count["nrows"]) * 100
+            self._nulls_count = self._nulls_count.drop(self._nulls_count.index[-1])
+        return self._nulls_count
 
     def count_nulls(self) -> PandasTable:
         return self.nulls_count

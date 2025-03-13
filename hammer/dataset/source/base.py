@@ -44,7 +44,7 @@ class DataSource(object):
         self.owner = owner
         self.description = description
         self._client = None
-        self._data = None
+        self._data: PandasTable = None
         self._fetch_data_sql = None
 
     @property
@@ -85,7 +85,7 @@ class DataSource(object):
     @property
     def data(self) -> PandasTable:
         if self._data is None:
-            self._data = PandasTable(self.client.read(self.fetch_data_sql)).copy()
+            self._data = self.client.read(self.fetch_data_sql)
         return self._data
 
     def to_dict(self):

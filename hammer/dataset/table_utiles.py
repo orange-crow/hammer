@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Any, Dict
 
 import pandas as pd
@@ -8,15 +7,25 @@ from scipy import stats
 
 
 def missing_info(df: pd.DataFrame, missing_val: Dict[str, Any] = None) -> None:
-    missing_info = {}
-    total_len = df.shape[0]
-    for col in df.columns:
-        missing_len = df[col].isna().sum()
-        if missing_val is not None:
-            missing_len += (df[col] == missing_val.get(col)).sum()
-        missing_info[col] = f"{missing_len}/{total_len}: {round(missing_len/total_len * 100, 1)}%"
-    print("Missing Info:")
-    pprint(missing_info, indent=2, sort_dicts=True)
+    # missing_info = {}
+    # total_len = df.shape[0]
+    # for col in df.columns:
+    #     missing_len = df[col].isna().sum()
+    #     if missing_val is not None:
+    #         missing_len += (df[col] == missing_val.get(col)).sum()
+    #     missing_info[col] = f"{missing_len}/{total_len}: {round(missing_len/total_len * 100, 1)}%"
+    # print("Missing Info:")
+    # pprint(missing_info, indent=2, sort_dicts=True)
+    if missing_val is None:
+        return df.isnull().sum()
+    is_null = False
+    for col_name, null_val in missing_val.items():
+        is_null |= df[col_name] == null_val
+
+    for col_name in missing_val.keys():
+        is_null |= df[col_name].isnull()
+
+    print(df[is_null].count())
 
 
 def plot_pie_bar(s: pd.Series):
