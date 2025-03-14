@@ -60,6 +60,10 @@ class PandasTableGroupBy(object):
         result = self.groupby_result.sum(**kwargs)
         return wrape_result(result)
 
+    def count(self, **kwargs) -> "PandasSeries":
+        result = self.groupby_result.count(**kwargs)
+        return wrape_result(result)
+
     def apply(self, func, **kwargs) -> Union["PandasSeries", "PandasTable"]:
         """
         应用自定义函数并返回 PandasTable 类型的结果。
@@ -389,3 +393,14 @@ class PandasTable(pd.DataFrame, TableBase):
     def copy(self, deep=...):
         df = super().copy(deep)
         return PandasTable(df, schema=self._schema)
+
+    def __getattr__(self, name):
+        """
+        允许通过 `table.列名` 访问列数据，同时保留 DataFrame 自身的属性访问。
+        """
+        try:
+            return super().__getattr__(name)  # 尝试访问 DataFrame 本身的属性
+        except AttributeError:
+            if name in self.columns:  # 如果是列名，则返回对应的 Series
+                return PandasSeries(self[name])
+            raise  # 继续抛出原始的 AttributeError，避免影响 DataFrame 其他属性
