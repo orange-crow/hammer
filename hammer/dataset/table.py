@@ -1,10 +1,11 @@
+from collections.abc import Hashable, Sequence
 from pprint import pprint
-from typing import Any, Callable, Dict, List, Sequence, Union
+from typing import Any, Callable, Dict, List, Sequence, Union  # noqa
 
 import numpy as np
 import pandas as pd
 from pandas._libs import lib
-from pandas._typing import Axis, CorrelationMethod, IndexLabel, TakeIndexer
+from pandas._typing import Axis, CorrelationMethod, IndexLabel, Level, TakeIndexer
 from pandas.core.groupby import DataFrameGroupBy
 from pandas.core.groupby.groupby import GroupByPlot
 from pandas.core.indexing import _LocIndexer
@@ -233,6 +234,19 @@ class PandasSeries(pd.Series):
         """
         return self.sum()  # 返回所有元素的和，您可以根据需要修改该方法
 
+    def reset_index(
+        self,
+        level: IndexLabel | None = None,
+        *,
+        drop: bool = False,
+        name: Level = None,
+        inplace: bool = False,
+        allow_duplicates: bool = False,
+    ) -> "PandasTable":
+        return wrape_result(
+            super().reset_index(level, drop=drop, inplace=inplace, allow_duplicates=allow_duplicates, name=name)
+        )
+
     def __getitem__(self, key):
         """
         重写 __getitem__ 方法，确保自定义属性也能随之传递。
@@ -394,13 +408,38 @@ class PandasTable(pd.DataFrame, TableBase):
         df = super().copy(deep)
         return PandasTable(df, schema=self._schema)
 
-    def __getattr__(self, name):
+    def __getattr__(
+        self, name
+    ):  # 在 属性不存在 时才会被调用, __getattribute__ 拦截所有属性和函数, 可能会影响 Python 内置方法，比如 df.shape、df.columns.
         """
         允许通过 `table.列名` 访问列数据，同时保留 DataFrame 自身的属性访问。
         """
         try:
-            return super().__getattr__(name)  # 尝试访问 DataFrame 本身的属性
+            return wrape_result(super().__getattr__(name))  # 尝试访问 DataFrame 本身的属性
         except AttributeError:
             if name in self.columns:  # 如果是列名，则返回对应的 Series
                 return PandasSeries(self[name])
             raise  # 继续抛出原始的 AttributeError，避免影响 DataFrame 其他属性
+
+    def reset_index(
+        self,
+        level: Level | Sequence[Level] = ...,
+        *,
+        drop: bool = ...,
+        col_level: int | str = ...,
+        col_fill: Hashable = ...,
+        inplace: bool = False,
+        allow_duplicates: bool = ...,
+        names: Hashable | Sequence[Hashable] = ...,
+    ) -> "PandasTable":
+        return wrape_result(
+            super().reset_index(
+                level,
+                drop=drop,
+                col_level=col_level,
+                col_fill=col_fill,
+                inplace=inplace,
+                allow_duplicates=allow_duplicates,
+                names=names,
+            )
+        )
