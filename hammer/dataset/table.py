@@ -65,6 +65,9 @@ class PandasTableGroupBy(object):
         result = self.groupby_result.count(**kwargs)
         return wrape_result(result)
 
+    def agg(self, func=None, *args, engine=None, engine_kwargs=None, **kwargs) -> "PandasTable":
+        return wrape_result(self.groupby_result.agg(func, *args, engine, engine_kwargs, **kwargs))
+
     def apply(self, func, **kwargs) -> Union["PandasSeries", "PandasTable"]:
         """
         应用自定义函数并返回 PandasTable 类型的结果。
@@ -423,14 +426,14 @@ class PandasTable(pd.DataFrame, TableBase):
 
     def reset_index(
         self,
-        level: Level | Sequence[Level] = ...,
+        level: Level | Sequence[Level] = None,
         *,
-        drop: bool = ...,
-        col_level: int | str = ...,
-        col_fill: Hashable = ...,
+        drop: bool = False,
+        col_level: int | str = None,
+        col_fill: Hashable = None,
         inplace: bool = False,
-        allow_duplicates: bool = ...,
-        names: Hashable | Sequence[Hashable] = ...,
+        allow_duplicates: bool = False,
+        names: Hashable | Sequence[Hashable] = None,
     ) -> "PandasTable":
         return wrape_result(
             super().reset_index(
