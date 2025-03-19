@@ -4,6 +4,7 @@ import wrapt
 
 from hammer.dataset.entity import Entity
 from hammer.dataset.source import BatchSource
+from hammer.dataset.table import PandasTable
 
 
 class Feature(object):
@@ -31,10 +32,15 @@ class Feature(object):
         self.schema = schema
         self.description = description
         self.owner = owner
+        self._filted_source = None
 
-    @wrapt.decorator
-    def __call__(self, wrapped, instance, args, kwargs):
-        # 根据 start_event_datetime, end_event_datetime 过滤需要进行计算的数据
+    @property
+    def filted_source(self):
+        if self._filted_source is None:
+            self._filted_source = self.process_source()
+        return self._filted_source
+
+    def process_source(self):
         source = [sr.data if hasattr(sr, "data") else sr for sr in self.source]
         source = [
             sr[
@@ -43,19 +49,30 @@ class Feature(object):
             ]
             for sr in source
         ]
+        return source
+
+    def process_result(self, result: PandasTable):
+        return result[
+            (result[self.event_timestamp_field] >= self.start_event_datetime)
+            and (result[self.event_timestamp_field] <= self.end_event_datetime)
+        ]
+
+    @wrapt.decorator
+    def __call__(self, wrapped, instance, args, kwargs):
+        # 根据 start_event_datetime, end_event_datetime 过滤需要进行计算的数据
+        source = self.process_source()
 
         result = wrapped(*source, **kwargs)
 
         # 根据 start_event_datetime, end_event_datetime 过滤计算结果
-        result = result[
-            (result[self.event_timestamp_field] >= self.start_event_datetime)
-            and (result[self.event_timestamp_field] <= self.end_event_datetime)
-        ]
+        result = self.process_result(result)
         return result
 
-    def compute(
-        self,
-        mode: Literal["pandas", "pyspark"] = "pandas",
-    ):
+    def compute(self, mode: Literal["pandas", "pyspark"] = "pandas"):
         """选择指定计算引擎进行计算"""
-        pass
+        if mode == "pandas":
+            return self.__call__(*self.filted_source)
+        elif mode == "pyspark":
+            pass
+        else:
+            raise ValueError(f"Unsupported mode: {mode}")
