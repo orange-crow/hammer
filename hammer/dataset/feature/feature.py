@@ -70,6 +70,11 @@ class Feature(object):
 
     def compute(self, mode: Literal["pandas", "pyspark"] = "pandas"):
         """选择指定计算引擎进行计算"""
+        # sql + udf 的方式更加适合hammer的理念：简单易用；
+        # udf 可以覆盖复杂特征计算逻辑；
+        # sql 可以覆盖简单特征计算逻辑；
+        # 好处是：可以最大程度复用spark对不同类型数据源的支持能力；
+        # 而相比于SQL来说，使用 pandas api 作为 DSL, 仍然不够简单易用；
         if mode == "pandas":
             return self.__call__(*self.filted_source)
         elif mode == "pyspark":
