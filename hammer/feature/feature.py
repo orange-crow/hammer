@@ -54,7 +54,7 @@ class Feature(object):
         return source
 
     def process_result(self, result: PandasTable):
-        if self.event_timestamp_field in result.columns:
+        if self.event_timestamp_field in result.columns and self.ttl > 0:
             return result[
                 (result[self.event_timestamp_field] >= self.start_event_datetime)
                 and (result[self.event_timestamp_field] <= self.end_event_datetime)

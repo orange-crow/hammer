@@ -6,7 +6,7 @@ from ..schema import Field, TableSchema
 
 
 def init_schema(schema: Union[str, List[Dict], TableSchema]) -> TableSchema:
-    if isinstance(schema, list) and isinstance(schema[0], str):
+    if isinstance(schema, list) and isinstance(schema[0], dict):
         return TableSchema.from_list(schema)
     elif isinstance(schema, list) and isinstance(schema[0], Field):
         return TableSchema(schema)

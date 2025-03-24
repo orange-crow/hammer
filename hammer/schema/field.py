@@ -31,11 +31,14 @@ class Field:
         name, dtype, tag = None, None, None
         for field_name, field_dtype in field.items():
             name = field_name
-            dtype_tag: list[str] = field_dtype.split(",")
-            dtype = dtype_tag[0].strip()
             tag = None
-            if len(dtype_tag) == 2:
-                tag = dtype_tag[1].strip()
+            if "," in field_dtype:
+                dtype_tag: list[str] = field_dtype.split(",")
+                dtype = dtype_tag[0].strip()
+                if len(dtype_tag) == 2:
+                    tag = dtype_tag[1].strip()
+            else:
+                dtype = field_dtype
         return cls(name, dtype, tag)
 
     @classmethod

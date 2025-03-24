@@ -24,7 +24,7 @@ from .table_utiles import (
 
 def wrape_result(result: Any):
     if isinstance(result, pd.DataFrame):
-        result = PandasTable(result)
+        result = PandasTable(data=result)
     elif isinstance(result, pd.Series):
         result = PandasSeries(result)
     return result
@@ -328,7 +328,7 @@ class PandasTable(pd.DataFrame, TableBase):
     @property
     def table_schema(self) -> TableSchema:
         if self._schema is None:
-            self._schema = init_schema([{k: v} for k, v in self.dtypes.to_dict().items()])
+            self._schema = init_schema([{k: str(v)} for k, v in self.dtypes.to_dict().items()])
         return self._schema
 
     def update_schema(self) -> None:
