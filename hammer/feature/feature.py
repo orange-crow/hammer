@@ -1,16 +1,16 @@
-from typing import List, Literal
+from typing import Literal, Union
 
 import wrapt
 
-from hammer.dataset.entity import Entity
-from hammer.dataset.source import BatchSource
-from hammer.dataset.table import PandasTable
+from ..source import DataSource
+from ..table import PandasTable
+from ..table.entity import Entity
 
 
 class Feature(object):
     def __init__(
         self,
-        source: List[BatchSource, "Feature"],
+        source: Union[DataSource, "Feature"],
         entity: Entity,
         event_timestamp_field: str = None,
         start_event_datetime: str = None,
@@ -42,20 +42,24 @@ class Feature(object):
 
     def process_source(self):
         source = [sr.data if hasattr(sr, "data") else sr for sr in self.source]
-        source = [
-            sr[
-                (sr[self.event_timestamp_field] >= self.start_event_datetime)
-                and (sr[self.event_timestamp_field] <= self.end_event_datetime)
+        if self.ttl > 0:
+            # FIXME: 这里的逻辑有问题，应该是根据 event_timestamp_field 进行过滤
+            source = [
+                sr[
+                    (sr[self.event_timestamp_field] >= self.start_event_datetime)
+                    and (sr[self.event_timestamp_field] <= self.end_event_datetime)
+                ]
+                for sr in source
             ]
-            for sr in source
-        ]
         return source
 
     def process_result(self, result: PandasTable):
-        return result[
-            (result[self.event_timestamp_field] >= self.start_event_datetime)
-            and (result[self.event_timestamp_field] <= self.end_event_datetime)
-        ]
+        if self.event_timestamp_field in result.columns:
+            return result[
+                (result[self.event_timestamp_field] >= self.start_event_datetime)
+                and (result[self.event_timestamp_field] <= self.end_event_datetime)
+            ]
+        return result
 
     @wrapt.decorator
     def __call__(self, wrapped, instance, args, kwargs):

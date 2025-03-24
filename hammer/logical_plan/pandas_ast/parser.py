@@ -3,7 +3,7 @@ import re
 from pprint import pprint
 from typing import Dict, List, Literal, Tuple
 
-from ...dataset.source import SUPPORT_FIEL_TYPES
+from ...table.source import SUPPORT_FIEL_TYPES
 from ..logical_plan import LogicalPlan
 from ..operations.build_ops import _DATA_METHOD_OPERATION
 

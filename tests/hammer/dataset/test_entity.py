@@ -1,7 +1,7 @@
 import pytest
 import typeguard
 
-from hammer.dataset.entity import Entity  # 替换为实际的模块名
+from hammer.table.entity import Entity  # 替换为实际的模块名
 
 
 # 测试初始化

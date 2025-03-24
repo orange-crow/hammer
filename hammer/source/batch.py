@@ -1,6 +1,6 @@
 from typing import List
 
-from hammer.dataset.table import PandasTable
+from hammer.table.table import PandasTable
 
 from .base import DataSource
 

@@ -2,7 +2,7 @@ from typing import Dict, Literal, Optional
 
 from hammer.config import CONF
 from hammer.core.protos.source_pb2 import Source as SourceProto
-from hammer.dataset.table import PandasTable
+from hammer.table.table import PandasTable
 from hammer.utils.client.clickhouse import ClickHouseClient
 from hammer.utils.client.client import ClientBase
 from hammer.utils.client.postgres import PostgresClient

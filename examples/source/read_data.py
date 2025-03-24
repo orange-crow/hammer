@@ -1,7 +1,7 @@
 import fire
 
 from hammer.config import CONF
-from hammer.dataset.source.batch import BatchSource
+from hammer.table.source.batch import BatchSource
 from hammer.utils.client.clickhouse import ClickHouseClient
 
 

@@ -5,7 +5,7 @@ import pandas as pd
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from hammer.dataset.table import PandasTable
+from hammer.table.table import PandasTable
 
 
 class ClientBase(object):

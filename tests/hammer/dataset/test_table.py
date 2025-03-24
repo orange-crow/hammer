@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from hammer.dataset import PandasTable
+from hammer.table import PandasTable
 from hammer.utils.schema import init_schema
 
 
