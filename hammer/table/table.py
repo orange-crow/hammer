@@ -247,7 +247,7 @@ class PandasSeries(pd.Series):
         allow_duplicates: bool = False,
     ) -> "PandasTable":
         return wrape_result(
-            super().reset_index(level, drop=drop, inplace=inplace, allow_duplicates=allow_duplicates, name=name)
+            super().reset_index(level, drop=drop, inplace=inplace, allow_duplicates=allow_duplicates, name=self.name)
         )
 
     def __getitem__(self, key):
