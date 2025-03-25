@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package feature;
+
+import "protos/source.proto";
+import "protos/entity.proto";
+
+// Feature 消息定义
+message Feature {
+  string name = 1;                       // 主键，特征名称
+  string version = 2;                    // 主键，特征版本
+  source.Source source = 3;              // 数据源信息，引用 source.proto 中的 Source
+  entity.Entity entity = 4;              // 实体信息，引用 entity.proto 中的 Entity
+  string event_timestamp_field = 5;      // 事件时间戳字段
+  string start_event_datetime = 6;       // 开始事件时间（ISO 格式字符串表示 DateTime）
+  string end_event_datetime = 7;         // 结束事件时间（ISO 格式字符串表示 DateTime）
+  int64 ttl = 8;                         // 生存时间（单位：秒，表示 Interval）
+  map<string, string> schema = 9;        // 特征模式，使用 map 表示 JSON
+  map<string, string> sink = 10;         // 输出目标，使用 map 表示 JSON
+  string transform = 11;                 // 转换逻辑
+  string description = 12;               // 特征描述
+  string owner = 13;                     // 拥有者
+  string status = 14;                    // 状态，默认值为 "pending"
+}

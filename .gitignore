@@ -173,3 +173,4 @@ poetry.lock
 .DS_Store
 dev_log
 config2.yaml
+.vscode/settings.json
