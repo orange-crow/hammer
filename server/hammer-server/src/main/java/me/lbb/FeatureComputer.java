@@ -43,3 +43,4 @@ public class FeatureComputer {
 
         spark.stop();
     }
+}
