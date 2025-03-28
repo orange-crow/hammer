@@ -12,4 +12,4 @@ class Entity(Base):
     __table_args__ = (UniqueConstraint("name"),)
 
     def __repr__(self):
-        return f"<Metadata {self.name}:{self.join_keys}>"
+        return f"<Entity {self.name}:{self.join_keys}>"

@@ -1,5 +1,5 @@
-# from .datahub.meta import Metadata
-# from .datahub.entity import Entity
+from .datahub.entity import Entity
 from .datahub.source import Source
+from .datahub.feature import Feature
 
-__all__ = ["Metadata", "Entity", "Source"]
+__all__ = ["Entity", "Source", "Feature"]
