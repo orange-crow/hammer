@@ -17,7 +17,7 @@ class Feature(Base):
     ttl = Column(Integer(), default=0)
     schema = Column(JSON, nullable=False)
     sink = Column(JSON, nullable=False)  # hive上 database, table
-    transform = Column(String(1024), nullable=False)
+    transform = Column(String(1024), nullable=False)  # sql 代码，传递给FeatureComputer进行计算
     description = Column(String(256), default="")
     owner = Column(String(64), default="")
     status = Column(String(20), default="todo", nullable=False)

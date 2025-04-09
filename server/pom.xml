@@ -21,6 +21,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>2.12.18</version> <!-- 版本应与 Spark 兼容 -->
+    </dependency>
     <!-- Spark Core -->
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -82,6 +87,20 @@
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j2-impl</artifactId>
         <version>2.20.0</version>
+    </dependency>
+
+     <!-- PostgreSQL JDBC -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.3.1</version>
+    </dependency>
+    
+    <!-- Jackson for JSON handling -->
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.15.0</version>
     </dependency>
 
   </dependencies>
