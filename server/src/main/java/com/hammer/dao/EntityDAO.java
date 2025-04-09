@@ -19,7 +19,7 @@ public class EntityDAO {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public Entity getEntityByName(String name) {
+    public Entity getEntity(String name) {
         String sql = "SELECT name, join_keys FROM entity WHERE name = ?";
 
         try (
@@ -40,5 +40,10 @@ public class EntityDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public Entity getEntity(Map<String, String> entityMap) {
+        String name = entityMap.get("name");
+        return getEntity(name);
     }
 }
